@@ -1,0 +1,499 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inkwell — Premium Reading{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MAGAZINE HERO HEADER  (like the POISE "THE BLOG" reference)
+════════════════════════════════════════════════════════════════ -->
+<section class="mag-hero" style="background:var(--bg-primary);">
+  <div class="site-container">
+    <div class="mag-hero-eyebrow">
+      <span>Est. 2026</span>
+    </div>
+    <h1 class="mag-hero-title">The&nbsp;Blog</h1>
+    <p class="mag-hero-sub">Ideas, stories, and perspectives — curated for curious minds.</p>
+    <div class="mag-divider">
+      <span class="mag-divider-line"></span>
+      <span class="mag-divider-dot"></span>
+      <span class="mag-divider-line"></span>
+    </div>
+  </div>
+</section>
+
+<div class="site-container" style="padding-bottom:80px;">
+
+  <!-- ═══ FEATURED CINEMA HERO ═══ -->
+  {% for post in featured_posts %}{% if forloop.first %}
+  <div class="hero-cinema">
+    <div class="hero-cinema-bg" style="background-image:url({{ post.featured_image.url }});"></div>
+    <div class="hero-cinema-overlay"></div>
+    <div class="hero-cinema-content">
+      <span class="hero-cinema-badge">&#9733; Featured Story</span>
+      <h1>{{ post.title|default:"Untitled Story" }}</h1>
+      <p>{{ post.short_description|default:"A short description is not available for this story yet."|truncatewords:32 }}</p>
+      <a href="{% url 'blogs' post.slug %}" class="hero-cta">
+        Read Story <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+    <div class="hero-cinema-meta">
+      <span>By</span>
+      <strong>{{ post.author|default:post.author.username|default:"Unknown author" }}</strong>
+      <span>{{ post.created_at|timesince }} ago</span>
+    </div>
+  </div>
+  {% endif %}{% endfor %}
+
+  <!-- ═══ FEATURED STRIP (remaining featured posts) ═══ -->
+  {% if featured_posts %}
+  <div class="reveal" style="margin-bottom:60px;">
+    <p class="section-label">Curated</p>
+    <h2 class="section-title" style="margin-bottom:28px;">Featured Stories</h2>
+    <div class="row" style="row-gap:24px;">
+      {% for post in featured_posts %}{% if not forloop.first %}
+      <div class="col-md-6">
+        <div class="blog-card-horizontal">
+          {% if post.featured_image %}
+          <div class="card-h-img-wrap">
+            <img class="card-h-img" src="{{ post.featured_image.url }}" alt="{{ post.title|default:'Featured story' }}">
+          </div>
+          {% endif %}
+          <div class="card-h-body">
+            <span class="blog-card-category">{{ post.category|default:"General" }}</span>
+            <h3 class="blog-card-title" style="font-size:1.1rem;">
+              <a href="{% url 'blogs' post.slug %}">{{ post.title|default:"Untitled Story" }}</a>
+            </h3>
+            <p class="blog-card-excerpt">{{ post.short_description|default:"A short description is not available for this story yet."|truncatewords:18 }}</p>
+            <div class="blog-card-meta">
+              <div class="blog-card-avatar">{{ post.author.username|first|upper }}</div>
+              <span><a href="{% url 'view_profile' post.author.username %}" style="color:inherit;">{{ post.author|default:post.author.username|default:"Unknown author" }}</a></span>
+              <span>·</span>
+              <span>{{ post.created_at|timesince }} ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}{% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if posts %}
+  <section class="reveal scroll-blogs-section">
+    <div class="scroll-blogs-head">
+      <div>
+        <p class="section-label" style="margin-bottom:6px;">Scroll & Read</p>
+        <h2 class="section-title" style="margin-bottom:0;">Enjoy Blogs in a Smooth Rail</h2>
+      </div>
+      <span class="scroll-blogs-hint"><i class="fa-solid fa-arrows-left-right"></i> Scroll sideways</span>
+    </div>
+
+    <div class="scroll-blogs-rail" id="scroll-blog-track">
+      {% for post in posts|slice:":12" %}
+      <a href="{% url 'blogs' post.slug %}" class="scroll-blog-card">
+        {% if post.featured_image %}
+        <img src="{{ post.featured_image.url }}" alt="{{ post.title|default:'Story image' }}">
+        {% else %}
+        <div class="scroll-blog-fallback">
+          <i class="fa-solid fa-feather-pointed"></i>
+        </div>
+        {% endif %}
+        <div class="scroll-blog-body">
+          <span class="scroll-blog-cat">{{ post.category|default:"General" }}</span>
+          <h4>{{ post.title|default:"Untitled Story" }}</h4>
+          <p>{{ post.short_description|default:"A short description is not available for this story yet."|truncatewords:12 }}</p>
+          <div class="scroll-blog-meta">
+            <span>{{ post.author.username|default:"author" }}</span>
+            <span>·</span>
+            <span>{{ post.created_at|timesince }} ago</span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ═══ MAIN GRID + SIDEBAR ═══ -->
+  <div class="row">
+
+    <!-- Left: Recent articles grid -->
+    <div class="col-lg-8">
+      <div class="reveal">
+        <p class="section-label">Latest</p>
+        <h2 class="section-title">Recent Articles</h2>
+      </div>
+      <div class="row" style="row-gap:28px;">
+        {% for post in posts %}
+        <div class="col-md-6 reveal" style="transition-delay:{{ forloop.counter0 }}0ms;">
+          <div class="blog-card">
+            {% if post.featured_image %}
+            <div class="blog-card-img-wrap">
+              <img class="blog-card-img" src="{{ post.featured_image.url }}" alt="{{ post.title|default:'Story image' }}">
+            </div>
+            {% else %}
+            <div class="blog-card-img-wrap">
+              <div style="width:100%;height:220px;background:linear-gradient(135deg,var(--accent-soft),var(--gold-soft));display:flex;align-items:center;justify-content:center;">
+                <i class="fa-solid fa-feather-pointed" style="font-size:2rem;color:var(--accent);opacity:.4;"></i>
+              </div>
+            </div>
+            {% endif %}
+            <div class="blog-card-body">
+              <span class="blog-card-category">{{ post.category|default:"General" }}</span>
+              <h3 class="blog-card-title">
+                <a href="{% url 'blogs' post.slug %}">{{ post.title|default:"Untitled Story" }}</a>
+              </h3>
+              <p class="blog-card-excerpt">{{ post.short_description|default:"A short description is not available for this story yet."|truncatewords:16 }}</p>
+              <div class="blog-card-meta">
+                <div class="blog-card-avatar">{{ post.author.username|first|upper }}</div>
+                <span>
+                  <a href="{% url 'view_profile' post.author.username %}" style="color:inherit;">{{ post.author|default:post.author.username|default:"Unknown author" }}</a>
+                </span>
+                <span>·</span>
+                <span>{{ post.created_at|timesince }} ago</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center reveal" style="padding:64px 0;">
+          <i class="fa-solid fa-feather-pointed" style="font-size:3rem;color:var(--text-tertiary);opacity:.5;"></i>
+          <p style="margin-top:16px;color:var(--text-tertiary);font-size:0.92rem;">
+            No articles published yet.<br>Be the first to write something great.
+          </p>
+          {% if user.is_authenticated %}
+          <a href="{% url 'add_post' %}" class="btn-premium" style="margin-top:16px;">
+            <i class="fa-solid fa-plus"></i> Write an Article
+          </a>
+          {% else %}
+          <a href="{% url 'register' %}" class="btn-premium" style="margin-top:16px;">
+            Get Started
+          </a>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Right: Sidebar -->
+    <div class="col-lg-4" style="margin-top:56px;">
+      {% if about %}
+      <div class="sidebar-card reveal">
+        <p class="section-label" style="margin-bottom:8px;">About</p>
+        <h4>{{ about.about_heading }}</h4>
+        <p>{{ about.about_description }}</p>
+      </div>
+      {% endif %}
+
+      {% if social_links %}
+      <div class="sidebar-card reveal">
+        <h4>Connect</h4>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          {% for i in social_links %}
+          <a href="{{ i.link }}" target="_blank" rel="noopener"
+            style="display:flex;align-items:center;gap:10px;color:var(--text-secondary);font-size:0.88rem;padding:8px 0;border-bottom:1px solid var(--border-light);transition:color .2s;"
+            onmouseover="this.style.color='var(--accent)';" onmouseout="this.style.color='var(--text-secondary)';">
+            {% if i.platform == 'GitHub' %}<i class="fa-brands fa-github" style="color:var(--text-secondary);width:16px;font-size:0.95rem;"></i>
+            {% elif i.platform == 'LinkedIn' %}<i class="fa-brands fa-linkedin" style="color:#0a66c2;width:16px;font-size:0.95rem;"></i>
+            {% elif i.platform == 'Portfolio' or i.platform == 'Website' %}<i class="fa-solid fa-globe" style="color:var(--accent);width:16px;font-size:0.88rem;"></i>
+            {% elif i.platform == 'Twitter' or i.platform == 'X' %}<i class="fa-brands fa-x-twitter" style="color:var(--text-secondary);width:16px;font-size:0.88rem;"></i>
+            {% elif i.platform == 'Facebook' %}<i class="fa-brands fa-facebook" style="color:#1877f2;width:16px;font-size:0.95rem;"></i>
+            {% elif i.platform == 'Instagram' %}<i class="fa-brands fa-instagram" style="width:16px;font-size:0.95rem;"></i>
+            {% else %}<i class="fa-solid fa-link" style="color:var(--accent);width:16px;font-size:0.78rem;"></i>{% endif %}
+            {{ i.platform }}
+            <i class="fa-solid fa-arrow-up-right-from-square" style="margin-left:auto;font-size:0.65rem;opacity:.4;"></i>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="sidebar-card reveal" style="background:linear-gradient(135deg,var(--gold-soft),#fff);border-color:rgba(184,150,62,.18);">
+        <p class="section-label" style="color:var(--gold);margin-bottom:10px;">Pro&nbsp;Tip</p>
+        <p style="font-size:0.86rem;color:var(--text-secondary);margin:0;line-height:1.7;">
+          Select any text on a blog post and click <strong style="color:var(--accent);">✨ Ask AI</strong>
+          to get an instant explanation powered by AI.
+        </p>
+      </div>
+
+      <!-- Mini category pills -->
+      <div class="sidebar-card reveal">
+        <h4>Topics</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;">
+          {% for cat in categories %}
+          <a href="{% url 'posts_by_category' cat.id %}"
+            style="display:inline-block;background:var(--bg-secondary);color:var(--text-secondary);padding:5px 14px;border-radius:20px;font-size:0.76rem;font-weight:500;transition:all .2s;text-decoration:none;border:1px solid var(--border-light);"
+            onmouseover="this.style.background='var(--accent-soft)';this.style.color='var(--accent)';this.style.borderColor='var(--accent)';"
+            onmouseout="this.style.background='var(--bg-secondary)';this.style.color='var(--text-secondary)';this.style.borderColor='var(--border-light)';">
+            {{ cat.category_name }}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div><!-- /sidebar col -->
+  </div><!-- /row -->
+</div><!-- /site-container -->
+
+{% endblock %}
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FEATURED DISCOVER SECTION  (near footer — wiki / blogs / video)
+════════════════════════════════════════════════════════════════ -->
+{% block footer %}
+<section class="wiki-discover-section">
+  <div class="site-container">
+
+    <div class="text-center reveal" style="margin-bottom:8px;">
+      <p class="section-label" style="text-align:center;">Discover</p>
+      <h2 class="section-title" style="text-align:center;margin-bottom:6px;font-size:2rem;">
+        Explore &amp; Expand
+      </h2>
+      <p style="color:var(--text-tertiary);font-size:0.92rem;margin-bottom:36px;font-family:'Cormorant Garamond',serif;font-style:italic;">
+        Dive deeper into knowledge — curated from across the web.
+      </p>
+    </div>
+
+    <!-- Tabs: Wikipedia · Community · Video -->
+    <div class="feat-tabs" id="feat-tabs">
+      <button class="feat-tab active" data-panel="wiki">
+        <i class="fa-brands fa-wikipedia-w" style="margin-right:6px;"></i>Wikipedia
+      </button>
+      <button class="feat-tab" data-panel="community">
+        <i class="fa-solid fa-pen-nib" style="margin-right:6px;"></i>Community Picks
+      </button>
+      <button class="feat-tab" data-panel="video">
+        <i class="fa-solid fa-clapperboard" style="margin-right:6px;"></i>Video
+      </button>
+    </div>
+
+    <!-- Panel: Wikipedia -->
+    <div class="feat-panel active" id="panel-wiki">
+      <div class="row" id="wiki-home-results" style="row-gap:20px;">
+        <div class="col-12 text-center py-4">
+          <div style="display:inline-block;width:28px;height:28px;border:2px solid var(--accent);border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;"></div>
+          <p style="color:var(--text-tertiary);font-size:0.86rem;margin-top:10px;">Loading articles…</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel: Community Picks -->
+    <div class="feat-panel" id="panel-community">
+      <div class="row" style="row-gap:20px;">
+        {% for post in posts|slice:":4" %}
+        <div class="col-lg-3 col-md-6">
+          <a href="{% url 'blogs' post.slug %}" style="text-decoration:none;color:inherit;">
+            <div class="wiki-discover-card">
+              {% if post.featured_image %}
+              <img src="{{ post.featured_image.url }}" alt="{{ post.title }}">
+              {% else %}
+              <div style="height:150px;background:linear-gradient(135deg,var(--accent-soft),var(--gold-soft));display:flex;align-items:center;justify-content:center;">
+                <i class="fa-solid fa-feather-pointed" style="font-size:2rem;color:var(--accent);opacity:.35;"></i>
+              </div>
+              {% endif %}
+              <div class="wiki-d-body">
+                <div class="wiki-tag">
+                  <i class="fa-solid fa-pen-nib" style="font-size:.6rem;"></i> {{ post.category|default:"General" }}
+                </div>
+                <h6>{{ post.title|default:"Untitled Story" }}</h6>
+                <p>{{ post.short_description|default:"A short description is not available for this story yet."|truncatewords:14 }}</p>
+              </div>
+            </div>
+          </a>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-4">
+          <p style="color:var(--text-tertiary);">No community posts yet — be the first!</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Panel: Video Blogs -->
+    <div class="feat-panel" id="panel-video">
+      <div class="row" style="row-gap:20px;">
+        {% for post in featured_posts|slice:":4" %}
+        <div class="col-lg-3 col-md-6">
+          <a href="{% url 'blogs' post.slug %}" style="text-decoration:none;color:inherit;">
+            <div class="wiki-discover-card">
+              {% if post.featured_image %}
+              <div style="position:relative;">
+                <img src="{{ post.featured_image.url }}" alt="{{ post.title }}">
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+                  <div style="width:44px;height:44px;background:rgba(255,255,255,.85);border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .2s;">
+                    <i class="fa-solid fa-play" style="color:var(--accent);font-size:0.9rem;margin-left:2px;"></i>
+                  </div>
+                </div>
+              </div>
+              {% else %}
+              <div style="height:150px;background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:center;">
+                <i class="fa-solid fa-clapperboard" style="font-size:2rem;color:rgba(255,255,255,.3);"></i>
+              </div>
+              {% endif %}
+              <div class="wiki-d-body">
+                <div class="wiki-tag">
+                  <i class="fa-solid fa-clapperboard" style="font-size:.6rem;"></i> Video Blog
+                </div>
+                <h6>{{ post.title|default:"Untitled Story" }}</h6>
+                <p>{{ post.short_description|default:"A short description is not available for this story yet."|truncatewords:14 }}</p>
+              </div>
+            </div>
+          </a>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-4">
+          <p style="color:var(--text-tertiary);">No video posts yet.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="blog-footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4 mb-4">
+        <a href="/" class="footer-brand">Inkwell</a>
+        <span class="footer-tagline">Stories worth reading.</span>
+        <div class="footer-nav">
+          <a href="/">Home</a>
+          <a href="{% url 'search' %}">Search</a>
+          {% if user.is_authenticated %}
+          <a href="{% url 'dashboard' %}">Dashboard</a>
+          {% else %}
+          <a href="{% url 'login' %}">Sign In</a>
+          <a href="{% url 'register' %}">Register</a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-lg-4 mb-4">
+        <p class="section-label" style="color:rgba(255,255,255,.3);margin-bottom:12px;">Topics</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          {% for cat in categories %}
+          <a href="{% url 'posts_by_category' cat.id %}"
+            style="font-size:0.76rem;color:rgba(255,255,255,.35);padding:4px 12px;border:1px solid rgba(255,255,255,.1);border-radius:20px;transition:all .2s;"
+            onmouseover="this.style.color='rgba(255,255,255,.8)';this.style.borderColor='rgba(255,255,255,.3)';"
+            onmouseout="this.style.color='rgba(255,255,255,.35)';this.style.borderColor='rgba(255,255,255,.1)';">
+            {{ cat.category_name }}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-lg-4 mb-4">
+        {% if social_links %}
+        <p class="section-label" style="color:rgba(255,255,255,.3);margin-bottom:12px;">Connect</p>
+        {% for link in social_links %}
+        <a href="{{ link.link }}" target="_blank" rel="noopener"
+          style="display:inline-flex;align-items:center;gap:6px;font-size:0.8rem;color:rgba(255,255,255,.4);margin-bottom:8px;transition:color .2s;"
+          onmouseover="this.style.color='rgba(255,255,255,.8)';"
+          onmouseout="this.style.color='rgba(255,255,255,.4)';">
+           {% if link.platform == 'GitHub' %}<i class="fa-brands fa-github" style="font-size:0.85rem;"></i>
+           {% elif link.platform == 'LinkedIn' %}<i class="fa-brands fa-linkedin" style="font-size:0.85rem;"></i>
+           {% elif link.platform == 'Portfolio' or link.platform == 'Website' %}<i class="fa-solid fa-globe" style="font-size:0.8rem;"></i>
+           {% elif link.platform == 'Twitter' or link.platform == 'X' %}<i class="fa-brands fa-x-twitter" style="font-size:0.8rem;"></i>
+           {% elif link.platform == 'Facebook' %}<i class="fa-brands fa-facebook" style="font-size:0.85rem;"></i>
+           {% elif link.platform == 'Instagram' %}<i class="fa-brands fa-instagram" style="font-size:0.85rem;"></i>
+           {% else %}<i class="fa-solid fa-link" style="font-size:0.7rem;"></i>{% endif %}
+           {{ link.platform }}
+        </a><br>
+        {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap:12px;">
+      <span class="footer-copy">© 2026 Inkwell. All rights reserved.</span>
+      <span class="footer-copy">Crafted with precision &amp; care.</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
+
+<script>
+/* ── Tab switching ───────────────────────────────── */
+document.querySelectorAll('.feat-tab').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.feat-tab').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('.feat-panel').forEach(function(p){ p.classList.remove('active'); });
+    btn.classList.add('active');
+    var panelId = 'panel-' + btn.getAttribute('data-panel');
+    var panel = document.getElementById(panelId);
+    if(panel) panel.classList.add('active');
+  });
+});
+
+/* ── Wikipedia discover loader ───────────────────── */
+(function loadWikiDiscover(){
+  var topics = [
+    'Artificial Intelligence','Space Exploration',
+    'Climate Change','Quantum Computing',
+    'Blockchain','Machine Learning',
+    'Renewable Energy','Biotechnology'
+  ];
+  var selected = topics.sort(function(){ return .5 - Math.random(); }).slice(0,4);
+  var container = document.getElementById('wiki-home-results');
+  var completed = 0, cards = [];
+
+  selected.forEach(function(topic, idx){
+    fetch('/category/api/wiki-search/?query=' + encodeURIComponent(topic))
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if(data.results && data.results.length > 0){
+          var item = data.results[0];
+          var wikiUrl = '/category/wiki/' + encodeURIComponent(item.title) + '/';
+          var thumb = item.thumbnail ||
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/200px-Wikipedia-logo-v2.svg.png';
+          cards.push({idx:idx, html:
+            '<div class="col-lg-3 col-md-6">' +
+            '<a href="' + wikiUrl + '" style="text-decoration:none;color:inherit;">' +
+            '<div class="wiki-discover-card">' +
+            '<img src="' + thumb + '" alt="' + item.title + '" loading="lazy">' +
+            '<div class="wiki-d-body">' +
+            '<div class="wiki-tag">' +
+            '<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/16px-Wikipedia-logo-v2.svg.png" style="width:11px;" alt=""> Wikipedia</div>' +
+            '<h6>' + item.title + '</h6>' +
+            '<p>' + (item.extract||'').substring(0,120) + '…</p>' +
+            '</div></div></a></div>'
+          });
+        }
+        completed++;
+        if(completed === selected.length){
+          cards.sort(function(a,b){ return a.idx - b.idx; });
+          if(cards.length > 0){
+            container.innerHTML = cards.map(function(c){ return c.html; }).join('');
+          } else {
+            container.innerHTML = '<p class="col-12 text-center" style="color:var(--text-tertiary);padding:32px 0;">Could not load articles right now.</p>';
+          }
+        }
+      })
+      .catch(function(){
+        completed++;
+        if(completed === selected.length && cards.length > 0){
+          container.innerHTML = cards.map(function(c){ return c.html; }).join('');
+        }
+      });
+  });
+})();
+
+/* ── Horizontal wheel scroll for blog rail ───────────────────── */
+(function initScrollRail(){
+  var rail = document.getElementById('scroll-blog-track');
+  if(!rail) return;
+  rail.addEventListener('wheel', function(e){
+    if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
+      e.preventDefault();
+      rail.scrollLeft += e.deltaY;
+    }
+  }, {passive:false});
+})();
+</script>
+{% endblock %}

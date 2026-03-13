@@ -1,0 +1,43 @@
+<div class="col-lg-3 mb-4 mb-lg-0">
+    <aside class="dashboard-sidebar reveal">
+        <div class="dashboard-sidebar-top">
+            <span class="dashboard-kicker">Workspace</span>
+            <h2 class="dashboard-title">Control Center</h2>
+            <p class="dashboard-subtitle">Manage content, refine your profile, and keep your publishing flow polished.</p>
+        </div>
+
+        <nav class="dashboard-nav" aria-label="Dashboard Navigation">
+            <a href="{% url 'dashboard' %}" class="dashboard-nav-link {% if '/dashboard/' == request.path %}active{% endif %}">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+
+            {% if perms.auth.view_user %}
+            <a href="{% url 'users' %}" class="dashboard-nav-link {% if '/users/' in request.path %}active{% endif %}">
+                <i class="fa-solid fa-users"></i>
+                <span>Users</span>
+            </a>
+            {% endif %}
+
+            <a href="{% url 'categories' %}" class="dashboard-nav-link {% if '/categories/' in request.path %}active{% endif %}">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Categories</span>
+            </a>
+
+            <a href="{% url 'posts' %}" class="dashboard-nav-link {% if '/posts/' in request.path %}active{% endif %}">
+                <i class="fa-solid fa-pen-nib"></i>
+                <span>Posts</span>
+            </a>
+
+            <a href="{% url 'edit_profile' %}" class="dashboard-nav-link {% if '/profile/edit/' in request.path %}active{% endif %}">
+                <i class="fa-solid fa-id-badge"></i>
+                <span>My Profile</span>
+            </a>
+
+            <a href="{% url 'logout' %}" class="dashboard-nav-link">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span>Logout</span>
+            </a>
+        </nav>
+    </aside>
+</div>

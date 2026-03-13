@@ -1,0 +1,662 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container" style="padding-top:24px; padding-bottom:60px;">
+    <div class="row">
+        {% include 'dashboard/sidebar.html' %}
+
+        <div class="col-lg-9">
+            <form id="post-form" action="{% url 'edit_post' post.id %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Top Bar -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                    <div>
+                        <p class="section-label" style="margin-bottom:4px;">Editor</p>
+                        <h2 style="font-size:1.5rem; margin:0;">Edit Post</h2>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <span id="word-count-badge"
+                            style="background:var(--bg-secondary); border:1px solid var(--border-light); padding:5px 14px; border-radius:20px; font-size:0.75rem; color:var(--text-tertiary); font-weight:500;">0
+                            words · 0 min read</span>
+                        <select name="status" id="id_status"
+                            style="border:1px solid var(--border-light); border-radius:8px; padding:8px 14px; font-size:0.82rem; font-family:'Inter',sans-serif; outline:none; background:var(--bg-card); color:var(--text-primary); cursor:pointer;">
+                            {% if post.status == 'Draft' %}
+                            <option value="Draft" selected>Draft</option>
+                            {% else %}
+                            <option value="Draft">Draft</option>
+                            {% endif %}
+                            {% if post.status == 'Published' %}
+                            <option value="Published" selected>Published</option>
+                            {% else %}
+                            <option value="Published">Published</option>
+                            {% endif %}
+                        </select>
+                        <button type="submit" class="btn-premium"><i class="fa fa-check"></i> Update</button>
+                    </div>
+                </div>
+
+                <!-- Form Errors -->
+                {% if form.errors %}
+                <div class="alert alert-danger"
+                    style="border-radius:var(--radius-sm); padding:16px; margin-bottom:20px; font-size:0.9rem; line-height:1.5;">
+                    <strong>Please correct the following errors:</strong>
+                    <ul style="margin-top:8px; margin-bottom:0; padding-left:20px;">
+                        {% for field in form %}
+                        {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div class="row" style="row-gap:20px;">
+                    <div class="col-lg-8">
+                        <!-- Title -->
+                        <div class="editor-field">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <label class="editor-label">Title</label>
+                                <button type="button" class="ai-assist-btn" onclick="aiAssist('generate_titles')"><i
+                                        class="fa fa-magic"></i> Suggest Titles</button>
+                            </div>
+                            <input type="text" name="title" id="id_title" maxlength="100" required
+                                class="editor-input editor-input-title"
+                                value="{{ form.title.value|default_if_none:post.title }}">
+                            <div id="title-suggestions" class="ai-result-box" style="display:none;"></div>
+                        </div>
+
+                        <!-- Short Description -->
+                        <div class="editor-field">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <label class="editor-label">Short Description</label>
+                                <button type="button" class="ai-assist-btn" onclick="aiAssist('seo_description')"><i
+                                        class="fa fa-magic"></i> AI Description</button>
+                            </div>
+                            <textarea name="short_description" id="id_short_description" maxlength="500" required
+                                rows="3"
+                                class="editor-textarea">{{ form.short_description.value|default_if_none:post.short_description }}</textarea>
+                            <div class="editor-char-count"><span id="desc-count">{{ post.short_description|length
+                                    }}</span>/500</div>
+                            <div id="seo-result" class="ai-result-box" style="display:none;"></div>
+                        </div>
+
+                        <!-- Blog Body -->
+                        <div class="editor-field">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <label class="editor-label">Blog Content</label>
+                                <div style="display:flex; gap:6px;">
+                                    <button type="button" class="ai-assist-btn"
+                                        onclick="aiAssist('generate_outline')"><i class="fa fa-list-ol"></i>
+                                        Outline</button>
+                                    <button type="button" class="ai-assist-btn" onclick="aiAssist('write_intro')"><i
+                                            class="fa fa-paragraph"></i> Write Intro</button>
+                                    <button type="button" class="ai-assist-btn" onclick="aiAssist('improve_text')"><i
+                                            class="fa fa-magic"></i> Improve</button>
+                                </div>
+                            </div>
+                            <div class="format-toolbar">
+                                <button type="button" onclick="insertFormat('**','**')" title="Bold"><b>B</b></button>
+                                <button type="button" onclick="insertFormat('*','*')" title="Italic"><i>I</i></button>
+                                <button type="button" onclick="insertFormat('\n## ','\n')" title="Heading">H2</button>
+                                <button type="button" onclick="insertFormat('\n### ','\n')"
+                                    title="Sub-heading">H3</button>
+                                <button type="button" onclick="insertFormat('\n- ','\n')" title="List">• List</button>
+                                <button type="button" onclick="insertFormat('\n1. ','\n')" title="Numbered list">1.
+                                    List</button>
+                                <button type="button" onclick="insertFormat('\n> ','\n')" title="Quote">❝ Quote</button>
+                                <button type="button" onclick="insertFormat('`','`')" title="Code">&lt;/&gt;</button>
+                                <div style="flex:1;"></div>
+                                <button type="button" onclick="togglePreview()" id="preview-toggle"><i
+                                        class="fa fa-eye"></i> Preview</button>
+                            </div>
+                            <textarea name="blog_body" id="id_blog_body" maxlength="50000" required rows="16"
+                                class="editor-textarea editor-body"
+                                oninput="updateStats()">{{ form.blog_body.value|default_if_none:post.blog_body }}</textarea>
+                            <div id="live-preview" class="live-preview" style="display:none;"></div>
+                            <div id="body-ai-result" class="ai-result-box" style="display:none;"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <!-- Category -->
+                        <div class="editor-sidebar-card">
+                            <label class="editor-label"><i class="fa fa-folder-open" style="color:var(--accent);"></i>
+                                Category</label>
+                            <select name="category" id="id_category" required class="editor-select">
+                                {% for cat in form.fields.category.queryset %}
+                                {% if form.is_bound %}
+                                {% if cat.id|stringformat:"s" == form.category.value|stringformat:"s" %}
+                                <option value="{{ cat.id }}" selected>{{ cat.category_name }}</option>
+                                {% else %}
+                                <option value="{{ cat.id }}">{{ cat.category_name }}</option>
+                                {% endif %}
+                                {% else %}
+                                {% if cat.id == post.category_id %}
+                                <option value="{{ cat.id }}" selected>{{ cat.category_name }}</option>
+                                {% else %}
+                                <option value="{{ cat.id }}">{{ cat.category_name }}</option>
+                                {% endif %}
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Featured Image -->
+                        <div class="editor-sidebar-card">
+                            <label class="editor-label"><i class="fa fa-image" style="color:var(--accent);"></i> Cover
+                                Image</label>
+                            {% if post.featured_image %}
+                            <div id="image-preview-zone" class="image-upload-zone has-image"
+                                onclick="document.getElementById('id_featured_image').click();">
+                                <div id="image-placeholder" style="display:none;">
+                                    {% else %}
+                                    <div id="image-preview-zone" class="image-upload-zone"
+                                        onclick="document.getElementById('id_featured_image').click();">
+                                        <div id="image-placeholder">
+                                            {% endif %}
+                                            <i class="fa fa-cloud-upload"
+                                                style="font-size:2rem; color:var(--text-tertiary);"></i>
+                                            <p style="margin:8px 0 0; font-size:0.82rem; color:var(--text-tertiary);">
+                                                Click to change image</p>
+                                        </div>
+                                        {% if post.featured_image %}
+                                        <img id="image-preview" src="{{ post.featured_image.url }}" alt=""
+                                            style="width:100%; border-radius:var(--radius-sm); object-fit:cover; max-height:220px;">
+                                        {% else %}
+                                        <img id="image-preview" src="" alt=""
+                                            style="display:none; width:100%; border-radius:var(--radius-sm); object-fit:cover; max-height:220px;">
+                                        {% endif %}
+                                    </div>
+                                    <input type="file" name="featured_image" id="id_featured_image" accept="image/*"
+                                        style="display:none;" onchange="previewImage(this)">
+                                </div>
+
+                                <!-- Options -->
+                                <div class="editor-sidebar-card">
+                                    <label class="editor-label"><i class="fa fa-cog" style="color:var(--accent);"></i>
+                                        Options</label>
+                                    <label class="editor-toggle">
+                                        {% if form.is_bound %}
+                                        {% if form.is_featured.value %}
+                                        <input type="checkbox" name="is_featured" id="id_is_featured" checked>
+                                        {% else %}
+                                        <input type="checkbox" name="is_featured" id="id_is_featured">
+                                        {% endif %}
+                                        {% else %}
+                                        {% if post.is_featured %}
+                                        <input type="checkbox" name="is_featured" id="id_is_featured" checked>
+                                        {% else %}
+                                        <input type="checkbox" name="is_featured" id="id_is_featured">
+                                        {% endif %}
+                                        {% endif %}
+                                        <span class="toggle-slider"></span>
+                                        <span class="toggle-label">Feature this post</span>
+                                    </label>
+                                </div>
+
+                                <!-- AI Writing Assistant -->
+                                <div class="editor-sidebar-card"
+                                    style="background:var(--accent-soft); border-color:transparent;">
+                                    <label class="editor-label"><i class="fa fa-magic" style="color:var(--accent);"></i>
+                                        AI
+                                        Assistant</label>
+                                    <p
+                                        style="font-size:0.82rem; color:var(--text-secondary); line-height:1.55; margin-bottom:12px;">
+                                        Use the ✨ buttons next to each field to get AI-powered help with your writing.
+                                    </p>
+                                    <div style="display:flex; flex-direction:column; gap:6px;">
+                                        <button type="button" class="ai-sidebar-btn"
+                                            onclick="aiAssist('generate_titles')">💡
+                                            Suggest Titles</button>
+                                        <button type="button" class="ai-sidebar-btn"
+                                            onclick="aiAssist('generate_outline')">📋
+                                            Generate Outline</button>
+                                        <button type="button" class="ai-sidebar-btn"
+                                            onclick="aiAssist('write_intro')">✍️ Write
+                                            Introduction</button>
+                                        <button type="button" class="ai-sidebar-btn"
+                                            onclick="aiAssist('improve_text')">✨
+                                            Improve Writing</button>
+                                        <button type="button" class="ai-sidebar-btn"
+                                            onclick="aiAssist('seo_description')">🔍
+                                            SEO Description</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reuse the same styles and scripts from add_post -->
+<style>
+    .editor-field {
+        margin-bottom: 22px;
+    }
+
+    .editor-label {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .editor-input {
+        width: 100%;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-sm);
+        padding: 12px 16px;
+        font-size: 0.92rem;
+        font-family: 'Inter', sans-serif;
+        outline: none;
+        background: var(--bg-card);
+        color: var(--text-primary);
+        transition: border-color 0.2s;
+    }
+
+    .editor-input:focus {
+        border-color: var(--accent);
+    }
+
+    .editor-input-title {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        padding: 14px 18px;
+    }
+
+    .editor-textarea {
+        width: 100%;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-sm);
+        padding: 14px 16px;
+        font-size: 0.9rem;
+        font-family: 'Inter', sans-serif;
+        outline: none;
+        background: var(--bg-card);
+        color: var(--text-primary);
+        line-height: 1.7;
+        resize: vertical;
+        transition: border-color 0.2s;
+    }
+
+    .editor-textarea:focus {
+        border-color: var(--accent);
+    }
+
+    .editor-body {
+        font-family: 'Inter', sans-serif;
+        min-height: 360px;
+        border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+        border-top: none;
+    }
+
+    .editor-char-count {
+        text-align: right;
+        font-size: 0.72rem;
+        color: var(--text-tertiary);
+        margin-top: 4px;
+    }
+
+    .editor-select {
+        width: 100%;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-sm);
+        padding: 10px 14px;
+        font-size: 0.88rem;
+        font-family: 'Inter', sans-serif;
+        outline: none;
+        background: var(--bg-card);
+        color: var(--text-primary);
+        cursor: pointer;
+        appearance: auto;
+    }
+
+    .editor-select:focus {
+        border-color: var(--accent);
+    }
+
+    .editor-sidebar-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        margin-bottom: 16px;
+        transition: border-color 0.2s;
+    }
+
+    .editor-sidebar-card:hover {
+        border-color: var(--accent-glow);
+    }
+
+    .image-upload-zone {
+        border: 2px dashed var(--border-light);
+        border-radius: var(--radius-sm);
+        padding: 28px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.25s;
+        overflow: hidden;
+    }
+
+    .image-upload-zone:hover {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+    }
+
+    .image-upload-zone.has-image {
+        padding: 0;
+        border-style: solid;
+    }
+
+    .editor-toggle {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        font-size: 0.88rem;
+        color: var(--text-secondary);
+    }
+
+    .editor-toggle input {
+        display: none;
+    }
+
+    .toggle-slider {
+        width: 40px;
+        height: 22px;
+        background: var(--border);
+        border-radius: 11px;
+        position: relative;
+        transition: background 0.2s;
+        flex-shrink: 0;
+    }
+
+    .toggle-slider::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #fff;
+        transition: transform 0.2s;
+    }
+
+    .editor-toggle input:checked+.toggle-slider {
+        background: var(--accent);
+    }
+
+    .editor-toggle input:checked+.toggle-slider::after {
+        transform: translateX(18px);
+    }
+
+    .format-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 6px 8px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-light);
+        border-bottom: none;
+        border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+        flex-wrap: wrap;
+    }
+
+    .format-toolbar button {
+        background: transparent;
+        border: none;
+        padding: 5px 10px;
+        font-size: 0.78rem;
+        font-family: 'Inter', sans-serif;
+        color: var(--text-secondary);
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.15s;
+        font-weight: 600;
+    }
+
+    .format-toolbar button:hover {
+        background: var(--bg-card);
+        color: var(--accent);
+    }
+
+    .ai-assist-btn {
+        background: transparent;
+        border: 1px solid var(--border-light);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-family: 'Inter', sans-serif;
+        color: var(--accent);
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .ai-assist-btn:hover {
+        background: var(--accent-soft);
+        border-color: var(--accent);
+    }
+
+    .ai-assist-btn.loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .ai-sidebar-btn {
+        background: var(--bg-card);
+        border: 1px solid var(--border-light);
+        padding: 8px 14px;
+        border-radius: var(--radius-sm);
+        font-size: 0.82rem;
+        font-family: 'Inter', sans-serif;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: left;
+        width: 100%;
+    }
+
+    .ai-sidebar-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        transform: translateX(3px);
+    }
+
+    .ai-result-box {
+        margin-top: 8px;
+        background: var(--accent-soft);
+        border: 1px solid rgba(99, 102, 241, 0.15);
+        border-radius: var(--radius-sm);
+        padding: 14px 16px;
+        font-size: 0.85rem;
+        line-height: 1.65;
+        color: var(--text-secondary);
+        position: relative;
+    }
+
+    .ai-result-box .ai-result-actions {
+        display: flex;
+        gap: 6px;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(99, 102, 241, 0.12);
+    }
+
+    .ai-result-box .ai-action-btn {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .ai-result-box .ai-action-btn:hover {
+        background: var(--accent-hover);
+    }
+
+    .ai-result-box .ai-action-btn.ghost {
+        background: transparent;
+        color: var(--text-tertiary);
+        border: 1px solid var(--border);
+    }
+
+    .ai-result-box .close-result {
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        background: none;
+        border: none;
+        color: var(--text-tertiary);
+        cursor: pointer;
+        font-size: 1rem;
+    }
+
+    .live-preview {
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-sm);
+        padding: 20px 24px;
+        min-height: 360px;
+        background: var(--bg-card);
+        font-size: 0.95rem;
+        line-height: 1.85;
+        color: var(--text-secondary);
+    }
+
+    .live-preview h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.35rem;
+        margin: 20px 0 10px;
+    }
+
+    .live-preview h3 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.1rem;
+        margin: 16px 0 8px;
+    }
+
+    .live-preview blockquote {
+        border-left: 3px solid var(--accent);
+        padding: 8px 16px;
+        margin: 12px 0;
+        background: var(--bg-secondary);
+        border-radius: 0 6px 6px 0;
+    }
+</style>
+
+<script>
+    function updateStats() {
+        var body = document.getElementById('id_blog_body').value;
+        var desc = document.getElementById('id_short_description').value;
+        var words = body.trim() ? body.trim().split(/\s+/).length : 0;
+        document.getElementById('word-count-badge').textContent = words + ' words · ' + Math.max(1, Math.ceil(words / 200)) + ' min read';
+        document.getElementById('desc-count').textContent = desc.length;
+        var preview = document.getElementById('live-preview');
+        if (preview.style.display !== 'none') renderPreview();
+    }
+    document.getElementById('id_short_description').addEventListener('input', updateStats);
+    document.getElementById('id_blog_body').addEventListener('input', updateStats);
+    window.addEventListener('load', updateStats);
+
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('image-preview').src = e.target.result;
+                document.getElementById('image-preview').style.display = 'block';
+                document.getElementById('image-placeholder').style.display = 'none';
+                document.getElementById('image-preview-zone').classList.add('has-image');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function insertFormat(before, after) {
+        var textarea = document.getElementById('id_blog_body');
+        var start = textarea.selectionStart, end = textarea.selectionEnd;
+        var text = textarea.value, selected = text.substring(start, end);
+        textarea.value = text.substring(0, start) + before + selected + after + text.substring(end);
+        textarea.focus();
+        textarea.selectionStart = start + before.length;
+        textarea.selectionEnd = start + before.length + selected.length;
+        updateStats();
+    }
+
+    function togglePreview() {
+        var preview = document.getElementById('live-preview');
+        var editor = document.getElementById('id_blog_body');
+        var btn = document.getElementById('preview-toggle');
+        if (preview.style.display === 'none') {
+            renderPreview(); preview.style.display = 'block'; editor.style.display = 'none';
+            btn.innerHTML = '<i class="fa fa-pencil"></i> Edit';
+        } else {
+            preview.style.display = 'none'; editor.style.display = 'block';
+            btn.innerHTML = '<i class="fa fa-eye"></i> Preview';
+        }
+    }
+    function renderPreview() {
+        var md = document.getElementById('id_blog_body').value;
+        md = md.replace(/### (.*?)(\n|$)/g, '<h3>$1</h3>').replace(/## (.*?)(\n|$)/g, '<h2>$1</h2>').replace(/# (.*?)(\n|$)/g, '<h1>$1</h1>');
+        md = md.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
+        md = md.replace(/`(.*?)`/g, '<code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;">$1</code>');
+        md = md.replace(/^> (.*?)(\n|$)/gm, '<blockquote>$1</blockquote>');
+        md = md.replace(/^- (.*?)(\n|$)/gm, '<li>$1</li>');
+        md = md.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+        document.getElementById('live-preview').innerHTML = '<p>' + md + '</p>';
+    }
+
+    function aiAssist(action) {
+        var title = document.getElementById('id_title').value;
+        var body = document.getElementById('id_blog_body').value;
+        var desc = document.getElementById('id_short_description').value;
+        var catSelect = document.getElementById('id_category');
+        var category = catSelect.options[catSelect.selectedIndex] ? catSelect.options[catSelect.selectedIndex].text : '';
+        var content = body || desc || title;
+        if (action === 'generate_titles') content = desc || body || title;
+        if (action === 'seo_description') content = body || desc;
+        var resultBox;
+        if (action === 'generate_titles') resultBox = document.getElementById('title-suggestions');
+        else if (action === 'seo_description') resultBox = document.getElementById('seo-result');
+        else resultBox = document.getElementById('body-ai-result');
+        resultBox.style.display = 'block';
+        resultBox.innerHTML = '<div style="display:flex;align-items:center;gap:8px;"><div class="spinner-border spinner-border-sm" style="color:var(--accent);" role="status"></div> AI is thinking...</div>';
+        document.querySelectorAll('.ai-assist-btn,.ai-sidebar-btn').forEach(function (b) { b.classList.add('loading'); });
+        fetch('/category/api/ai-write/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: action, content: content, title: title, category: category }) })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                document.querySelectorAll('.ai-assist-btn,.ai-sidebar-btn').forEach(function (b) { b.classList.remove('loading'); });
+                if (data.error) { resultBox.innerHTML = '<span style="color:var(--rose);">⚠ ' + data.error + '</span><button class="close-result" onclick="this.parentElement.style.display=\'none\'">&times;</button>'; return; }
+                var html = '<button class="close-result" onclick="this.parentElement.style.display=\'none\'">&times;</button>';
+                html += '<div style="white-space:pre-wrap;">' + data.result + '</div><div class="ai-result-actions">';
+                if (action === 'generate_titles') html += '<button class="ai-action-btn" onclick="applyTitleSuggestion()">Use Selected Title</button>';
+                else if (action === 'seo_description') html += '<button class="ai-action-btn" onclick="applyToField(\'id_short_description\',this)">Use This</button>';
+                else if (action === 'write_intro' || action === 'improve_text') html += '<button class="ai-action-btn" onclick="insertAtCursor(this)">Insert</button><button class="ai-action-btn ghost" onclick="replaceContent(this)">Replace</button>';
+                else html += '<button class="ai-action-btn" onclick="insertAtCursor(this)">Insert</button>';
+                html += '<button class="ai-action-btn ghost" onclick="this.closest(\'.ai-result-box\').style.display=\'none\'">Dismiss</button></div>';
+                resultBox.innerHTML = html;
+            }).catch(function () {
+                document.querySelectorAll('.ai-assist-btn,.ai-sidebar-btn').forEach(function (b) { b.classList.remove('loading'); });
+                resultBox.innerHTML = '<span style="color:var(--rose);">⚠ Failed.</span><button class="close-result" onclick="this.parentElement.style.display=\'none\'">&times;</button>';
+            });
+    }
+    function applyTitleSuggestion() { var box = document.getElementById('title-suggestions'); var text = box.querySelector('div[style]').textContent; var lines = text.split('\n').filter(function (l) { return l.trim().match(/^\d/); }); if (lines.length > 0) { document.getElementById('id_title').value = lines[0].replace(/^\d+[\.\)]\s*/, '').replace(/^["']|["']$/g, '').trim(); } box.style.display = 'none'; }
+    function applyToField(id, btn) { var box = btn.closest('.ai-result-box'); document.getElementById(id).value = box.querySelector('div[style]').textContent.trim(); box.style.display = 'none'; updateStats(); }
+    function insertAtCursor(btn) { var box = btn.closest('.ai-result-box'); var text = box.querySelector('div[style]').textContent.trim(); var ta = document.getElementById('id_blog_body'); var pos = ta.selectionStart || ta.value.length; ta.value = ta.value.substring(0, pos) + '\n\n' + text + '\n\n' + ta.value.substring(pos); box.style.display = 'none'; ta.focus(); updateStats(); }
+    function replaceContent(btn) { var box = btn.closest('.ai-result-box'); document.getElementById('id_blog_body').value = box.querySelector('div[style]').textContent.trim(); box.style.display = 'none'; updateStats(); }
+</script>
+{% endblock %}
+{% block footer %}{% endblock %}

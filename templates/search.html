@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Search header -->
+<div style="padding:52px 0 36px;border-bottom:1px solid var(--border-light);margin-bottom:48px;animation:pageFadeIn var(--dur-slow) var(--ease-out);background:radial-gradient(ellipse at 50% 0%,rgba(99,102,241,.05) 0%,transparent 60%);">
+  <div class="site-container" style="text-align:center;">
+    <p class="section-label" style="text-align:center;margin-bottom:8px;">Search</p>
+    <h2 style="font-size:clamp(1.6rem,3vw,2.4rem);font-weight:500;margin-bottom:0;">
+      {% if keyword %}"{{ keyword }}"{% else %}Find Articles{% endif %}
+    </h2>
+    {% if keyword %}
+    <p style="color:var(--text-tertiary);font-size:0.88rem;margin-top:6px;">
+      {{ blogs|length }} blog result{{ blogs|length|pluralize }} · {{ wiki_results|length }} Wikipedia result{{ wiki_results|length|pluralize }}
+    </p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="site-container" style="padding-bottom:80px;">
+  <div class="row" style="row-gap:28px;">
+    {% for blog in blogs %}
+    <div class="col-lg-4 col-md-6 reveal" style="transition-delay:{{ forloop.counter0 }}0ms;">
+      <div class="blog-card">
+        {% if blog.featured_image %}
+        <div class="blog-card-img-wrap">
+          <img class="blog-card-img" src="{{ blog.featured_image.url }}" alt="{{ blog.title|default:'Story image' }}">
+        </div>
+        {% else %}
+        <div style="height:200px;background:linear-gradient(135deg,var(--accent-soft),var(--gold-soft));display:flex;align-items:center;justify-content:center;">
+          <i class="fa-solid fa-feather-pointed" style="font-size:2rem;color:var(--accent);opacity:.3;"></i>
+        </div>
+        {% endif %}
+        <div class="blog-card-body">
+          <span class="blog-card-category">{{ blog.category|default:"General" }}</span>
+          <h3 class="blog-card-title"><a href="{% url 'blogs' blog.slug %}">{{ blog.title|default:"Untitled Story" }}</a></h3>
+          <p class="blog-card-excerpt">{{ blog.short_description|default:"A short description is not available for this story yet."|truncatewords:16 }}</p>
+          <div class="blog-card-meta">
+            <div class="blog-card-avatar">{{ blog.author.username|first|upper }}</div>
+            <span><a href="{% url 'view_profile' blog.author.username %}" style="color:inherit;">{{ blog.author|default:blog.author.username|default:"Unknown author" }}</a></span>
+            <span>·</span>
+            <span>{{ blog.created_at|timesince }} ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center reveal" style="padding:64px 0;">
+      <i class="fa-solid fa-magnifying-glass" style="font-size:3rem;color:var(--text-tertiary);opacity:.4;"></i>
+      <p style="margin-top:16px;color:var(--text-tertiary);">
+        {% if keyword %}No articles found for "<strong>{{ keyword }}</strong>". Try a different term.{% else %}Enter a keyword above to search.{% endif %}
+      </p>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if keyword %}
+  <div style="margin-top:54px;">
+    <div class="reveal" style="margin-bottom:18px;">
+      <p class="section-label">Wikipedia</p>
+      <h3 class="section-title" style="margin-bottom:0;font-size:1.55rem;">Related Knowledge</h3>
+    </div>
+
+    <div class="row" style="row-gap:16px;">
+      {% for wiki in wiki_results %}
+      <div class="col-lg-4 col-md-6 reveal" style="transition-delay:{{ forloop.counter0 }}0ms;">
+        <a href="{% url 'wiki_article' wiki.title %}" class="wiki-search-card" style="text-decoration:none;color:inherit;">
+          <span class="wiki-search-badge">Wikipedia</span>
+          <h4>{{ wiki.title }}</h4>
+          <p>{{ wiki.extract|default:"No summary available."|truncatewords:22 }}</p>
+          <span class="wiki-search-link">Read article <i class="fa-solid fa-arrow-right"></i></span>
+        </a>
+      </div>
+      {% empty %}
+      <div class="col-12">
+        <div class="sidebar-card" style="margin-bottom:0;">
+          <p style="margin:0;color:var(--text-tertiary);">No Wikipedia matches for this keyword yet.</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<style>
+  .wiki-search-card {
+    display:block;
+    height:100%;
+    padding:18px 18px 16px;
+    border:1px solid var(--border-light);
+    border-radius:var(--radius-md);
+    background:var(--bg-card);
+    transition:transform var(--dur-fast) var(--ease-out),border-color var(--dur-fast) var(--ease-out);
+  }
+  .wiki-search-card:hover { transform:translateY(-3px); border-color:rgba(99,102,241,.28); color:inherit; }
+  .wiki-search-badge {
+    display:inline-block;
+    font-family:'Inter',sans-serif;
+    font-size:0.62rem;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--accent);
+    background:var(--accent-soft);
+    border-radius:999px;
+    padding:3px 8px;
+    margin-bottom:8px;
+  }
+  .wiki-search-card h4 {
+    font-size:1.02rem;
+    margin-bottom:8px;
+    color:var(--text-primary);
+    line-height:1.35;
+  }
+  .wiki-search-card p {
+    margin:0 0 10px;
+    font-size:0.82rem;
+    color:var(--text-secondary);
+    line-height:1.65;
+  }
+  .wiki-search-link {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-family:'Inter',sans-serif;
+    font-size:0.72rem;
+    font-weight:700;
+    color:var(--accent);
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+</style>
+{% endblock %}

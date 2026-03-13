@@ -1,0 +1,12 @@
+crispy-bootstrap4
+Django
+django-crispy-forms
+Pillow
+groq
+requests
+psycopg2-binary
+
+
+
+
+psql 'postgresql://neondb_owner:npg_FmYgvARHO2e8@ep-misty-sound-ady9xavy-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'

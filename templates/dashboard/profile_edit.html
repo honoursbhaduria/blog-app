@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="site-container dashboard-screen">
+    <div class="row">
+        {% include 'dashboard/sidebar.html' %}
+
+        <div class="col-lg-9 dashboard-main">
+            <section class="profile-editor-panel reveal">
+                <div class="profile-editor-cover{% if profile.profile_picture %} has-cover-img{% endif %}"{% if profile.profile_picture %} style="--cover-img: url('{{ profile.profile_picture.url }}')"{% endif %}>
+                    <div class="profile-editor-topbar">
+                        <div class="profile-editor-identity">
+                            <div class="profile-editor-avatar-wrap">
+                                {% if profile.profile_picture %}
+                                <img src="{{ profile.profile_picture.url }}" alt="Avatar" class="profile-editor-avatar">
+                                {% else %}
+                                <div class="profile-editor-avatar-fallback">{{ request.user.username|first|upper }}</div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <span class="profile-editor-badge">Profile Studio</span>
+                                <h2>{{ request.user.get_full_name|default:request.user.username }}</h2>
+                                <p>@{{ request.user.username }} &nbsp;&middot;&nbsp; {{ request.user.email }}</p>
+                            </div>
+                        </div>
+                        <a href="{% url 'view_profile' request.user.username %}" class="btn-ghost" style="color:#fff;border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.08);">
+                            <i class="fa-solid fa-up-right-from-square"></i> Public View
+                        </a>
+                    </div>
+                </div>
+
+                <div class="profile-editor-form">
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="profile-message">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span style="margin-left:8px;">{{ message }}</span>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="dashboard-form-grid">
+                            <div class="dashboard-form-group">
+                                <label class="dashboard-field-label">Username</label>
+                                <div class="dashboard-static-field">{{ request.user.username }}</div>
+                            </div>
+                            <div class="dashboard-form-group">
+                                <label class="dashboard-field-label">Email</label>
+                                <div class="dashboard-static-field">{{ request.user.email }}</div>
+                            </div>
+
+                            {% for field in form %}
+                            <div class="dashboard-form-group {% if field.name == 'bio' or field.name == 'profile_picture' %}full{% endif %}">
+                                <label class="dashboard-field-label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                <small style="display:block;margin-top:6px;color:var(--text-tertiary);font-size:0.76rem;">{{ field.help_text }}</small>
+                                {% endif %}
+                                {% if field.errors %}
+                                <small style="display:block;margin-top:6px;color:var(--rose);font-size:0.76rem;">{{ field.errors }}</small>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="profile-editor-actions">
+                            <p class="profile-editor-note">Your public profile updates instantly after saving.</p>
+                            <button type="submit" class="btn-premium">
+                                <i class="fa-solid fa-floppy-disk"></i> Save Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<!-- Category Header -->
+<div style="background:linear-gradient(175deg,var(--accent-soft) 0%,var(--bg-primary) 100%);padding:56px 0 36px;border-bottom:1px solid var(--border-light);margin-bottom:48px;animation:pageFadeIn var(--dur-slow) var(--ease-out);">
+  <div class="site-container" style="text-align:center;">
+    <p class="section-label" style="text-align:center;margin-bottom:8px;">Category</p>
+    <h1 style="font-size:clamp(2rem,4vw,3rem);font-weight:500;margin-bottom:0;">{{ category }}</h1>
+  </div>
+</div>
+
+<div class="site-container" style="padding-bottom:80px;">
+  <div class="row" style="row-gap:28px;">
+    {% if posts %}
+    {% for post in posts %}
+    <div class="col-lg-4 col-md-6 reveal" style="transition-delay:{{ forloop.counter0 }}0ms;">
+      <div class="blog-card">
+        {% if post.featured_image %}
+        <div class="blog-card-img-wrap">
+          <img class="blog-card-img" src="{{ post.featured_image.url }}" alt="{{ post.title|default:'Story image' }}">
+        </div>
+        {% else %}
+        <div style="height:200px;background:linear-gradient(135deg,var(--accent-soft),var(--gold-soft));display:flex;align-items:center;justify-content:center;">
+          <i class="fa-solid fa-feather-pointed" style="font-size:2rem;color:var(--accent);opacity:.3;"></i>
+        </div>
+        {% endif %}
+        <div class="blog-card-body">
+          <span class="blog-card-category">{{ post.category|default:"General" }}</span>
+          <h3 class="blog-card-title"><a href="{% url 'blogs' post.slug %}">{{ post.title|default:"Untitled Story" }}</a></h3>
+          <p class="blog-card-excerpt">{{ post.short_description|default:"A short description is not available for this story yet."|truncatewords:16 }}</p>
+          <div class="blog-card-meta">
+            <div class="blog-card-avatar">{{ post.author.username|first|upper }}</div>
+            <span><a href="{% url 'view_profile' post.author.username %}" style="color:inherit;">{{ post.author|default:post.author.username|default:"Unknown author" }}</a></span>
+            <span>·</span>
+            <span>{{ post.created_at|timesince }} ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="col-12 text-center reveal" style="padding:64px 0;">
+      <i class="fa-solid fa-folder-open" style="font-size:3rem;color:var(--text-tertiary);opacity:.4;"></i>
+      <p style="margin-top:16px;color:var(--text-tertiary);">No posts in this category yet.</p>
+      <a href="/" class="btn-ghost" style="margin-top:12px;">Browse all posts</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

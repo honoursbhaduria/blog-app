@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="site-container dashboard-screen">
+    <div class="row">
+        {% include 'dashboard/sidebar.html' %}
+
+        <div class="col-lg-9 dashboard-main">
+            <section class="dashboard-hero-panel reveal">
+                <div class="dashboard-user-row">
+                    <div>
+                        <span class="section-label">Dashboard</span>
+                        <h1>Welcome back, {{ user.first_name|default:user.username }}</h1>
+                        <p>Track your content, manage categories, and keep your editorial workflow feeling sharp.</p>
+                    </div>
+                    <span class="dashboard-user-badge">{{ user.email|default:user.username }}</span>
+                </div>
+
+                <div class="dashboard-stat-bar">
+                    <div class="dashboard-stat-item">
+                        <span class="dashboard-stat-value">{{ category_count }}</span>
+                        <span class="dashboard-stat-label">Categories</span>
+                    </div>
+                    <div class="dashboard-stat-divider"></div>
+                    <div class="dashboard-stat-item">
+                        <span class="dashboard-stat-value">{{ blogs_count }}</span>
+                        <span class="dashboard-stat-label">Published Posts</span>
+                    </div>
+                    <div class="dashboard-stat-divider"></div>
+                    <div class="dashboard-stat-item">
+                        <span class="dashboard-stat-value">{{ user.date_joined|date:"Y" }}</span>
+                        <span class="dashboard-stat-label">Member Since</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dashboard-panel reveal">
+                <div class="dashboard-panel-header">
+                    <div>
+                        <span class="section-label">Quick actions</span>
+                        <h3>What would you like to manage?</h3>
+                    </div>
+                    <a href="{% url 'add_post' %}" class="btn-premium">
+                        <i class="fa-solid fa-plus"></i> New Post
+                    </a>
+                </div>
+
+                <div class="dashboard-action-list">
+                    <a href="{% url 'categories' %}" class="dashboard-action-row">
+                        <div class="dashboard-action-icon">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+                        <div class="dashboard-action-text">
+                            <strong>Organize categories</strong>
+                            <span>Refine topic structure and keep the taxonomy tidy.</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right dashboard-action-arrow"></i>
+                    </a>
+                    <a href="{% url 'posts' %}" class="dashboard-action-row">
+                        <div class="dashboard-action-icon">
+                            <i class="fa-solid fa-pen-nib"></i>
+                        </div>
+                        <div class="dashboard-action-text">
+                            <strong>Review all posts</strong>
+                            <span>Jump into edits, moderation, and publishing decisions.</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right dashboard-action-arrow"></i>
+                    </a>
+                    <a href="{% url 'edit_profile' %}" class="dashboard-action-row">
+                        <div class="dashboard-action-icon">
+                            <i class="fa-solid fa-user-pen"></i>
+                        </div>
+                        <div class="dashboard-action-text">
+                            <strong>Edit your profile</strong>
+                            <span>Update your author identity and public-facing details.</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right dashboard-action-arrow"></i>
+                    </a>
+                    {% if perms.auth.view_user %}
+                    <a href="{% url 'users' %}" class="dashboard-action-row">
+                        <div class="dashboard-action-icon">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div class="dashboard-action-text">
+                            <strong>Manage users</strong>
+                            <span>Administer contributors and account permissions.</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right dashboard-action-arrow"></i>
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'add_post' %}" class="dashboard-action-row">
+                        <div class="dashboard-action-icon" style="background:linear-gradient(135deg,var(--accent),#7c3aed);">
+                            <i class="fa-solid fa-plus" style="color:#fff;"></i>
+                        </div>
+                        <div class="dashboard-action-text">
+                            <strong>Write a new post</strong>
+                            <span>Start a fresh story and get it into the editorial pipeline.</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right dashboard-action-arrow"></i>
+                    </a>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block footer %}{% endblock %}
