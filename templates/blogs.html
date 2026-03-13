@@ -35,6 +35,10 @@
             </div>
           </div>
           <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+            <button id="like-btn" onclick="toggleLike()" style="background:var(--bg-secondary);border:1px solid var(--border-light);border-radius:8px;padding:7px 14px;font-size:0.78rem;font-family:'Inter',sans-serif;cursor:pointer;{% if user_has_liked %}color:#e11d48;border-color:#e11d48;{% else %}color:var(--text-secondary);{% endif %}transition:all .2s;">
+              <i class="{% if user_has_liked %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i>
+              <span id="like-count">{{ like_count }}</span>
+            </button>
             <button onclick="shareArticle()" style="background:var(--bg-secondary);border:1px solid var(--border-light);border-radius:8px;padding:7px 14px;font-size:0.78rem;font-family:'Inter',sans-serif;cursor:pointer;color:var(--text-secondary);transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)';" onmouseout="this.style.borderColor='var(--border-light)';this.style.color='var(--text-secondary)';">
               <i class="fa-solid fa-share-nodes"></i> Share
             </button>
@@ -324,6 +328,32 @@
     document.getElementById('ai-panel-overlay').style.display='none';
   }
   document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeAIPanel(); });
+
+  // Like toggle
+  function toggleLike(){
+    {% if user.is_authenticated %}
+    var btn = document.getElementById('like-btn');
+    var icon = btn.querySelector('i');
+    var countEl = document.getElementById('like-count');
+    fetch('/category/like/{{ single_blog.slug }}/', {
+      method: 'POST',
+      headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json'}
+    }).then(function(r){ return r.json(); }).then(function(data){
+      countEl.textContent = data.like_count;
+      if(data.user_has_liked){
+        icon.className = 'fa-solid fa-heart';
+        btn.style.color = '#e11d48';
+        btn.style.borderColor = '#e11d48';
+      } else {
+        icon.className = 'fa-regular fa-heart';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }
+    }).catch(function(){});
+    {% else %}
+    window.location.href = '{% url "login" %}';
+    {% endif %}
+  }
 
   function shareArticle(){
     if(navigator.share){

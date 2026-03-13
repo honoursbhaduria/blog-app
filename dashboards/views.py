@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, redirect, render
 
-from blogs.models import Blog, Category
+from blogs.models import Blog, Category, Comment, Like
 from django.contrib.auth.decorators import login_required
 
 from .forms import AddUserForm, BlogPostForm, CategoryForm, EditUserForm
@@ -11,11 +11,17 @@ from django.contrib.auth.models import User
 @login_required(login_url='login')
 def dashboard(request):
     category_count = Category.objects.all().count()
-    blogs_count = Blog.objects.all().count()
+    blogs_count = Blog.objects.filter(status='Published').count()
+    total_comments = Comment.objects.all().count()
+    total_likes = Like.objects.all().count()
+    draft_posts = Blog.objects.filter(status='Draft').order_by('-created_at')
 
     context = {
         'category_count': category_count,
         'blogs_count': blogs_count,
+        'total_comments': total_comments,
+        'total_likes': total_likes,
+        'draft_posts': draft_posts,
     }
     return render(request, 'dashboard/dashboard.html', context)
 

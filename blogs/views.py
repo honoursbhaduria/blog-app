@@ -1,7 +1,8 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.decorators import login_required
 
-from .models import Blog, Category, Comment
+from .models import Blog, Category, Comment, Like
 from django.db.models import Q
 from .ai_views import fetch_wikipedia_results
 
@@ -40,13 +41,33 @@ def blogs(request, slug):
     # Comments
     comments = Comment.objects.filter(blog=single_blog)
     comment_count = comments.count()
-    
+
+    # Likes
+    like_count = Like.objects.filter(blog=single_blog).count()
+    user_has_liked = (
+        request.user.is_authenticated
+        and Like.objects.filter(blog=single_blog, user=request.user).exists()
+    )
+
     context = {
         'single_blog': single_blog,
         'comments': comments,
         'comment_count': comment_count,
+        'like_count': like_count,
+        'user_has_liked': user_has_liked,
     }
     return render(request, 'blogs.html', context)
+
+
+@login_required(login_url='login')
+def like_blog(request, slug):
+    blog = get_object_or_404(Blog, slug=slug, status='Published')
+    like, created = Like.objects.get_or_create(user=request.user, blog=blog)
+    if not created:
+        like.delete()
+    like_count = Like.objects.filter(blog=blog).count()
+    user_has_liked = created
+    return JsonResponse({'like_count': like_count, 'user_has_liked': user_has_liked})
 
 def search(request):
     keyword = (request.GET.get('keyword') or '').strip()

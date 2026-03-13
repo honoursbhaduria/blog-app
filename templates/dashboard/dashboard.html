@@ -28,6 +28,16 @@
                     </div>
                     <div class="dashboard-stat-divider"></div>
                     <div class="dashboard-stat-item">
+                        <span class="dashboard-stat-value">{{ total_likes }}</span>
+                        <span class="dashboard-stat-label">Total Likes</span>
+                    </div>
+                    <div class="dashboard-stat-divider"></div>
+                    <div class="dashboard-stat-item">
+                        <span class="dashboard-stat-value">{{ total_comments }}</span>
+                        <span class="dashboard-stat-label">Total Comments</span>
+                    </div>
+                    <div class="dashboard-stat-divider"></div>
+                    <div class="dashboard-stat-item">
                         <span class="dashboard-stat-value">{{ user.date_joined|date:"Y" }}</span>
                         <span class="dashboard-stat-label">Member Since</span>
                     </div>
@@ -99,6 +109,47 @@
                         <i class="fa-solid fa-arrow-right dashboard-action-arrow"></i>
                     </a>
                 </div>
+            </section>
+
+            <section class="dashboard-panel reveal">
+                <div class="dashboard-panel-header">
+                    <div>
+                        <span class="section-label">Saved Drafts</span>
+                        <h3>Your unpublished work</h3>
+                    </div>
+                    <a href="{% url 'add_post' %}" class="btn-premium">
+                        <i class="fa-solid fa-plus"></i> New Draft
+                    </a>
+                </div>
+
+                {% if draft_posts %}
+                <table class="table table-hover" style="margin-top:12px;">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Created</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for post in draft_posts %}
+                        <tr>
+                            <td>{{ post.title }}</td>
+                            <td>{{ post.category }}</td>
+                            <td>{{ post.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="{% url 'edit_post' post.id %}" title="Edit draft"><i class="fa fa-edit text-success"></i></a>
+                                &nbsp;
+                                <a href="{% url 'delete_post' post.id %}" title="Delete draft"><i class="fa fa-trash text-danger"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p style="color:var(--text-tertiary);font-size:0.88rem;padding:20px 0;">No saved drafts. Start writing and save as a draft to see them here.</p>
+                {% endif %}
             </section>
         </div>
     </div>
