@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+
+{% block title %}My Library — Inkwell{% endblock %}
+
+{% block content %}
+<div class="site-container" style="padding-top:40px;padding-bottom:80px;">
+
+  <!-- Page header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:36px;">
+    <div>
+      <p class="section-label" style="margin-bottom:6px;">Personal Reading Library</p>
+      <h1 style="font-size:clamp(1.6rem,3vw,2.4rem);font-weight:600;margin:0;">My Saved Blogs</h1>
+      <p style="color:var(--text-tertiary);font-size:0.88rem;margin-top:8px;">
+        {{ favorites|length }} blog{{ favorites|length|pluralize }} saved · Ask the AI anything about them below
+      </p>
+    </div>
+    <a href="/" class="btn-ghost" style="font-size:0.84rem;padding:9px 18px;">
+      <i class="fa-solid fa-arrow-left"></i> Browse More
+    </a>
+  </div>
+
+  {% if favorites %}
+
+  <!-- ── Kanban board ── -->
+  <div class="kanban-board" id="kanban-board">
+    {% for fav in favorites %}
+    <div class="kanban-card reveal" style="animation-delay:{{ forloop.counter0 }}00ms;">
+      {% if fav.blog.featured_image %}
+      <div class="kanban-card-img">
+        <img src="{{ fav.blog.featured_image.url }}" alt="{{ fav.blog.title }}">
+      </div>
+      {% endif %}
+      <div class="kanban-card-body">
+        <span class="blog-card-category" style="font-size:0.68rem;margin-bottom:8px;display:inline-block;">
+          {{ fav.blog.category }}
+        </span>
+        <h3 class="kanban-card-title">
+          <a href="{% url 'blogs' fav.blog.slug %}" style="color:var(--text-primary);text-decoration:none;">
+            {{ fav.blog.title }}
+          </a>
+        </h3>
+        <p class="kanban-card-desc">{{ fav.blog.short_description|truncatewords:20 }}</p>
+        <div class="kanban-card-meta">
+          <span style="font-size:0.74rem;color:var(--text-tertiary);">
+            <i class="fa-regular fa-clock"></i> Saved {{ fav.created_at|timesince }} ago
+          </span>
+          <div style="display:flex;gap:8px;">
+            <a href="{% url 'blogs' fav.blog.slug %}" class="btn-ghost" style="font-size:0.74rem;padding:5px 12px;">
+              Read
+            </a>
+            <button
+              class="btn-ghost kanban-remove-btn"
+              style="font-size:0.74rem;padding:5px 12px;color:var(--rose);border-color:rgba(239,68,68,.25);"
+              data-slug="{{ fav.blog.slug }}"
+              data-card-id="kanban-{{ fav.blog.slug }}"
+              onclick="removeFavorite(this)">
+              <i class="fa-solid fa-bookmark"></i> Saved
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div><!-- /kanban-board -->
+
+  {% else %}
+
+  <!-- Empty state -->
+  <div style="text-align:center;padding:80px 24px;">
+    <div style="font-size:3.5rem;margin-bottom:20px;">📚</div>
+    <h2 style="font-size:1.5rem;font-weight:600;margin-bottom:10px;">Your library is empty</h2>
+    <p style="color:var(--text-tertiary);font-size:0.92rem;max-width:400px;margin:0 auto 28px;">
+      Save blog posts you enjoy to build your personal reading library and unlock AI-powered insights.
+    </p>
+    <a href="/" class="btn-premium">Explore Blogs</a>
+  </div>
+
+  {% endif %}
+
+  {% if favorites %}
+  <!-- ── AI Chat panel ── -->
+  <div style="margin-top:60px;">
+    <div style="max-width:760px;margin:0 auto;">
+      <div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius-xl);padding:36px;box-shadow:var(--shadow-card);">
+        <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:24px;">
+          <div style="width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
+            ✨
+          </div>
+          <div>
+            <h3 style="font-size:1.2rem;font-weight:600;margin:0 0 4px;">Ask AI About Your Library</h3>
+            <p style="color:var(--text-tertiary);font-size:0.84rem;margin:0;">
+              Your saved blogs are used as context. Ask anything — get answers grounded in what you've read.
+            </p>
+          </div>
+        </div>
+
+        <!-- Chat history -->
+        <div id="rag-chat-history" style="max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;margin-bottom:20px;padding-right:4px;"></div>
+
+        <!-- Input row -->
+        <div style="display:flex;gap:10px;align-items:flex-end;">
+          <textarea
+            id="rag-question"
+            placeholder="e.g. What are the main takeaways from my saved blogs? Summarise the key ideas…"
+            rows="2"
+            style="flex:1;resize:vertical;min-height:52px;max-height:160px;"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendRagQuestion();}"
+          ></textarea>
+          <button onclick="sendRagQuestion()" class="btn-premium" id="rag-send-btn" style="padding:12px 22px;flex-shrink:0;">
+            <i class="fa-solid fa-paper-plane"></i> Ask
+          </button>
+        </div>
+        <p style="font-size:0.72rem;color:var(--text-tertiary);margin-top:10px;">
+          <i class="fa-solid fa-circle-info"></i>&nbsp;
+          Answers are based solely on your {{ favorites|length }} saved blog{{ favorites|length|pluralize }}.
+        </p>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div><!-- /site-container -->
+
+<style>
+  /* ── Kanban board ── */
+  .kanban-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .kanban-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    transition: transform .22s var(--ease-out), box-shadow .22s;
+    display: flex;
+    flex-direction: column;
+  }
+  .kanban-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0,0,0,.10);
+  }
+  .kanban-card-img {
+    width: 100%;
+    height: 150px;
+    overflow: hidden;
+  }
+  .kanban-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .4s var(--ease-out);
+  }
+  .kanban-card:hover .kanban-card-img img { transform: scale(1.04); }
+  .kanban-card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
+  .kanban-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.35;
+    margin: 0 0 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .kanban-card-desc {
+    font-size: 0.82rem;
+    color: var(--text-tertiary);
+    line-height: 1.55;
+    flex: 1;
+    margin: 0 0 14px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .kanban-card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: auto;
+  }
+  /* ── RAG chat bubbles ── */
+  .rag-bubble { max-width: 88%; padding: 12px 16px; border-radius: 14px; font-size: 0.88rem; line-height: 1.65; }
+  .rag-bubble-user {
+    background: var(--accent);
+    color: #fff;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+  .rag-bubble-ai {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    border: 1px solid var(--border-light);
+  }
+  .rag-bubble-loading {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--bg-secondary); border: 1px solid var(--border-light);
+    border-radius: 14px; border-bottom-left-radius: 4px;
+    padding: 12px 16px; font-size: 0.82rem; color: var(--text-tertiary);
+  }
+  .rag-spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border-light);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+  /* ── Remove from library ── */
+  function removeFavorite(btn) {
+    var slug = btn.dataset.slug;
+    var card = btn.closest('.kanban-card');
+    fetch('/blogs/' + slug + '/favorite/', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' }
+    }).then(function(r){ return r.json(); }).then(function(data){
+      if(!data.saved && card){
+        card.style.transition = 'opacity .3s, transform .3s';
+        card.style.opacity = '0';
+        card.style.transform = 'scale(.95)';
+        setTimeout(function(){ card.remove(); updateCount(); }, 320);
+      }
+    }).catch(function(){ alert('Could not remove blog. Please try again.'); });
+  }
+
+  function updateCount() {
+    var remaining = document.querySelectorAll('.kanban-card').length;
+    var countEl = document.querySelector('[data-count-label]');
+    if (countEl) countEl.textContent = remaining;
+  }
+
+  /* ── RAG chat ── */
+  function sendRagQuestion() {
+    var input = document.getElementById('rag-question');
+    var question = input.value.trim();
+    if (!question) return;
+
+    var history = document.getElementById('rag-chat-history');
+    var sendBtn = document.getElementById('rag-send-btn');
+
+    // User bubble
+    var userBubble = document.createElement('div');
+    userBubble.className = 'rag-bubble rag-bubble-user';
+    userBubble.textContent = question;
+    history.appendChild(userBubble);
+
+    // Loading bubble
+    var loadingBubble = document.createElement('div');
+    loadingBubble.className = 'rag-bubble-loading';
+    loadingBubble.innerHTML = '<div class="rag-spinner"></div> Thinking…';
+    history.appendChild(loadingBubble);
+
+    history.scrollTop = history.scrollHeight;
+    input.value = '';
+    input.disabled = true;
+    sendBtn.disabled = true;
+
+    fetch('/category/api/ai-rag-chat/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({ question: question })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      loadingBubble.remove();
+      var aiBubble = document.createElement('div');
+      aiBubble.className = 'rag-bubble rag-bubble-ai';
+      if (data.error) {
+        aiBubble.style.color = 'var(--rose)';
+        aiBubble.textContent = '⚠ ' + data.error;
+      } else {
+        var html = data.answer;
+        // Process bold before italic to avoid single-asterisk false matches
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/\*(?!\*)(.*?)(?<!\*)\*/g, '<em>$1</em>');
+        html = html.replace(/`(.*?)`/g, '<code style="background:var(--bg-card);padding:2px 5px;border-radius:4px;font-size:.87em;">$1</code>');
+        html = html.replace(/### (.*?)(\n|$)/g, '<h5 style="font-size:.92rem;margin-top:10px;">$1</h5>');
+        html = html.replace(/## (.*?)(\n|$)/g, '<h4 style="font-size:.98rem;margin-top:12px;">$1</h4>');
+        html = html.replace(/\n/g, '<br>');
+        aiBubble.innerHTML = html;
+      }
+      history.appendChild(aiBubble);
+      history.scrollTop = history.scrollHeight;
+    })
+    .catch(function(){
+      loadingBubble.remove();
+      var errBubble = document.createElement('div');
+      errBubble.className = 'rag-bubble rag-bubble-ai';
+      errBubble.style.color = 'var(--rose)';
+      errBubble.textContent = '⚠ Failed to get a response. Please try again.';
+      history.appendChild(errBubble);
+      history.scrollTop = history.scrollHeight;
+    })
+    .finally(function(){
+      input.disabled = false;
+      sendBtn.disabled = false;
+      input.focus();
+    });
+  }
+
+  function getCookie(name) {
+    var value = '; ' + document.cookie;
+    var parts = value.split('; ' + name + '=');
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return '';
+  }
+</script>
+{% endblock %}

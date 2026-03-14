@@ -1,7 +1,9 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
-from .models import Blog, Category, Comment
+from .models import Blog, Category, Comment, FavoriteBlog
 from django.db.models import Q
 from .ai_views import fetch_wikipedia_results
 
@@ -40,11 +42,18 @@ def blogs(request, slug):
     # Comments
     comments = Comment.objects.filter(blog=single_blog)
     comment_count = comments.count()
-    
+
+    # Favorite status for authenticated users
+    is_favorited = (
+        request.user.is_authenticated
+        and FavoriteBlog.objects.filter(user=request.user, blog=single_blog).exists()
+    )
+
     context = {
         'single_blog': single_blog,
         'comments': comments,
         'comment_count': comment_count,
+        'is_favorited': is_favorited,
     }
     return render(request, 'blogs.html', context)
 
@@ -69,3 +78,28 @@ def search(request):
         'wiki_results': wiki_results,
     }
     return render(request, 'search.html', context)
+
+
+@login_required
+@require_POST
+def toggle_favorite(request, slug):
+    """Toggle a blog post's saved/favorite status for the current user."""
+    blog = get_object_or_404(Blog, slug=slug, status='Published')
+    fav, created = FavoriteBlog.objects.get_or_create(user=request.user, blog=blog)
+    if not created:
+        fav.delete()
+        return JsonResponse({'saved': False})
+    return JsonResponse({'saved': True})
+
+
+@login_required
+def my_favorites(request):
+    """Display the current user's saved blogs as a Kanban-style reading library."""
+    favorites = (
+        FavoriteBlog.objects
+        .filter(user=request.user)
+        .select_related('blog', 'blog__category', 'blog__author')
+        .order_by('-created_at')
+    )
+    context = {'favorites': favorites}
+    return render(request, 'favorites.html', context)
