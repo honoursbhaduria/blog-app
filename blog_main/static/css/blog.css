@@ -300,6 +300,58 @@ img { max-width: 100%; }
 .mag-divider-line { flex:1; height:1px; background:var(--border); }
 .mag-divider-dot  { width:5px; height:5px; border-radius:50%; background:var(--gold); flex-shrink:0; }
 
+/* ── UNICORNSTUDIO HERO LAYOUT ──────────────────────────────────── */
+.mag-hero-inner {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+}
+
+.mag-hero-text {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Left-align text when shown beside the animation */
+.mag-hero-text .mag-hero-eyebrow,
+.mag-hero-text .mag-hero-title,
+.mag-hero-text .mag-hero-sub {
+  text-align: left;
+}
+
+.mag-hero-visual {
+  width: 380px;
+  height: 475px; /* preserves ~4:5 aspect ratio (matches 1080×1350 canvas) */
+  flex-shrink: 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+}
+
+@media (max-width: 900px) {
+  .mag-hero-inner {
+    flex-direction: column;
+    gap: 32px;
+  }
+  .mag-hero-text .mag-hero-eyebrow,
+  .mag-hero-text .mag-hero-title,
+  .mag-hero-text .mag-hero-sub {
+    text-align: center;
+  }
+  .mag-hero-visual {
+    width: 100%;
+    max-width: 420px;
+    height: 320px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 576px) {
+  .mag-hero-visual {
+    display: none;
+  }
+}
+
 /* ── FEATURED CINEMA HERO CARD ──────────────────────────────────── */
 .hero-cinema {
   position:relative; border-radius:var(--radius-lg);
