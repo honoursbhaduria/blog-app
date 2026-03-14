@@ -35,6 +35,17 @@
             </div>
           </div>
           <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+            {% if user.is_authenticated %}
+            <button id="fav-btn" onclick="toggleFavorite()"
+              style="background:var(--bg-secondary);border:1px solid var(--border-light);border-radius:8px;padding:7px 14px;font-size:0.78rem;font-family:'Inter',sans-serif;cursor:pointer;transition:all .2s;"
+              title="{% if is_favorited %}Remove from library{% else %}Save to library{% endif %}">
+              {% if is_favorited %}
+              <span style="color:var(--accent);font-weight:600;"><i class="fa-solid fa-bookmark"></i> Saved</span>
+              {% else %}
+              <span style="color:var(--text-secondary);"><i class="fa-regular fa-bookmark"></i> Save</span>
+              {% endif %}
+            </button>
+            {% endif %}
             <button onclick="shareArticle()" style="background:var(--bg-secondary);border:1px solid var(--border-light);border-radius:8px;padding:7px 14px;font-size:0.78rem;font-family:'Inter',sans-serif;cursor:pointer;color:var(--text-secondary);transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)';" onmouseout="this.style.borderColor='var(--border-light)';this.style.color='var(--text-secondary)';">
               <i class="fa-solid fa-share-nodes"></i> Share
             </button>
@@ -333,6 +344,32 @@
         alert('Link copied to clipboard!');
       });
     }
+  }
+
+  // Save / unsave blog
+  var isFavorited = {{ is_favorited|yesno:"true,false" }};
+  function toggleFavorite(){
+    var btn = document.getElementById('fav-btn');
+    fetch('/blogs/{{ single_blog.slug }}/favorite/', {
+      method:'POST',
+      headers:{'X-CSRFToken':getCsrf(),'Content-Type':'application/json'}
+    }).then(function(r){return r.json();}).then(function(data){
+      isFavorited = data.saved;
+      if(isFavorited){
+        btn.innerHTML='<span style="color:var(--accent);font-weight:600;"><i class="fa-solid fa-bookmark"></i> Saved</span>';
+        btn.title='Remove from library';
+      } else {
+        btn.innerHTML='<span style="color:var(--text-secondary);"><i class="fa-regular fa-bookmark"></i> Save</span>';
+        btn.title='Save to library';
+      }
+    }).catch(function(){ alert('Could not update library. Please try again.'); });
+  }
+
+  function getCsrf(){
+    var v='; '+document.cookie;
+    var p=v.split('; csrftoken=');
+    if(p.length===2) return p.pop().split(';').shift();
+    return '';
   }
 
   // Wikipedia sidebar

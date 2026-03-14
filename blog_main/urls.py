@@ -25,11 +25,15 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('category/', include('blogs.urls')),
     path('blogs/<slug:slug>/', BlogsView.blogs, name='blogs'),
+    path('blogs/<slug:slug>/favorite/', BlogsView.toggle_favorite, name='toggle_favorite'),
     # Search endpoint
     path('search/', BlogsView.search, name='search'),
     path('register/', views.register, name='register'),
     path('login/', views.login, name='login'),
     path('logout/', views.logout, name='logout'),
+
+    # Favorites / Reading Library
+    path('library/', BlogsView.my_favorites, name='my_favorites'),
 
     # Dashboards
     path('dashboard/', include('dashboards.urls')),

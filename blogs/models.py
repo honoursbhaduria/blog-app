@@ -45,3 +45,15 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.comment
+
+
+class FavoriteBlog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_blogs')
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='favorited_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'blog')
+
+    def __str__(self):
+        return f"{self.user.username} — {self.blog.title}"

@@ -300,3 +300,85 @@ Return ONLY the meta description text.""",
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+
+@csrf_exempt
+@require_POST
+def ai_rag_chat(request):
+    """
+    RAG-style AI chat: answers the user's question using their saved blog
+    posts as context documents (Retrieval-Augmented Generation).
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    try:
+        from .models import FavoriteBlog
+
+        data = json.loads(request.body)
+        question = data.get('question', '').strip()
+
+        if not question:
+            return JsonResponse({'error': 'No question provided'}, status=400)
+
+        favorites = (
+            FavoriteBlog.objects
+            .filter(user=request.user)
+            .select_related('blog', 'blog__category')
+            .order_by('-created_at')[:10]  # Limit to 10 most-recent to stay within token budget
+        )
+
+        if not favorites:
+            return JsonResponse({
+                'error': 'You have no saved blogs yet. Save some blogs to your library first!'
+            }, status=400)
+
+        context_docs = []
+        for fav in favorites:
+            blog = fav.blog
+            # Truncate body to ~1200 chars per blog so the combined context stays
+            # comfortably within the model's context window when using 10 blogs.
+            doc = (
+                f'--- Blog: "{blog.title}" (Category: {blog.category}) ---\n'
+                f'Description: {blog.short_description}\n'
+                f'Content: {blog.blog_body[:1200]}'
+            )
+            context_docs.append(doc)
+
+        context_text = '\n\n'.join(context_docs)
+
+        prompt = (
+            f'The user has saved the following blog posts to their personal reading library:\n\n'
+            f'{context_text}\n\n'
+            f'Using ONLY the content from those saved blogs, please answer this question:\n'
+            f'{question}\n\n'
+            f'If the answer cannot be found in the saved blogs, say so clearly and suggest '
+            f'what kind of blogs the user might want to save to get that answer.'
+        )
+
+        client = Groq(api_key=settings.GROQ_API_KEY)
+        completion = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a helpful AI assistant that helps users learn from their "
+                        "saved blog collection. Base your answers on the provided blog content. "
+                        "Use markdown formatting for clarity."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0.7,
+            max_tokens=800,
+        )
+
+        answer = completion.choices[0].message.content
+        return JsonResponse({'answer': answer})
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
