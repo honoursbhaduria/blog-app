@@ -93,10 +93,8 @@ export default function Profile() {
                 setSearchResults(Array.isArray(refreshedSearch.data) ? refreshedSearch.data : []);
             }
 
-            if (usernameValue === username) {
-                const profileRes = await profileService.getPublicProfile(username);
-                setProfile(profileRes.data);
-            }
+            const profileRes = await profileService.getPublicProfile(username);
+            setProfile(profileRes.data);
         } catch (error) {
             console.error('Friend action failed', error);
             const detail = error?.response?.data?.detail;

@@ -225,17 +225,17 @@ export default function Search() {
                                 {wikiResults.length > 0 ? (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         {wikiResults.map((wiki, idx) => (
-                                            <Link key={idx} to={`/wiki/${encodeURIComponent(wiki.title)}`} className="brutal-border border-4 bg-white hover:bg-canvas-dark group transition-all p-8 flex flex-col items-start shadow-[8px_8px_0px_0px_rgba(28,28,28,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1">
+                                            <Link key={idx} to={`/wiki/${encodeURIComponent(wiki.title)}`} className="brutal-border border-4 bg-white hover:bg-canvas-light group transition-all p-8 flex flex-col items-start shadow-[8px_8px_0px_0px_rgba(28,28,28,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1">
                                                 <span className="px-4 py-1 bg-canvas-coral text-white text-[10px] font-bold uppercase tracking-widest mb-6 brutal-border border-2 border-white">
                                                     Wikipedia Index
                                                 </span>
-                                                <h3 className="text-3xl font-display font-black text-canvas-dark group-hover:text-white mb-4 uppercase leading-none tracking-tighter">
+                                                <h3 className="text-3xl font-display font-black text-canvas-dark group-hover:text-canvas-coral mb-4 uppercase leading-none tracking-tighter">
                                                     {wiki.title}
                                                 </h3>
-                                                <p className="text-sm font-medium text-gray-600 group-hover:text-gray-300 leading-relaxed mb-8 border-l-4 border-canvas-coral pl-4 italic">
+                                                <p className="text-sm font-medium text-gray-600 group-hover:text-gray-700 leading-relaxed mb-8 border-l-4 border-canvas-coral pl-4 italic">
                                                     {wiki.extract ? (wiki.extract.length > 150 ? wiki.extract.substring(0, 150) + '...' : wiki.extract) : "Read full record."}
                                                 </p>
-                                                <div className="mt-auto flex items-center gap-2 text-xs font-black font-display uppercase tracking-widest text-canvas-coral bg-white px-4 py-2 brutal-border border-2 border-canvas-dark group-hover:border-white">
+                                                <div className="mt-auto flex items-center gap-2 text-xs font-black font-display uppercase tracking-widest text-canvas-coral bg-white px-4 py-2 brutal-border border-2 border-canvas-dark group-hover:bg-canvas-coral group-hover:text-white">
                                                     Fetch Entry <ArrowRight size={16} strokeWidth={4} />
                                                 </div>
                                             </Link>

@@ -142,7 +142,7 @@ export default function EditProfile() {
         <div className="max-w-5xl mx-auto py-10 px-4 sm:px-6 lg:px-8 mb-20">
             <div className="brutal-border border-4 border-canvas-dark bg-white shadow-[12px_12px_0px_0px_rgba(28,28,28,1)] overflow-hidden">
                 {/* Header */}
-                <div className="px-8 py-6 border-b-4 border-canvas-dark bg-canvas-dark flex items-center justify-between">
+                <div className="px-8 py-6 border-b-4 border-canvas-dark bg-white flex items-center justify-between">
                     <div>
                         <h2 className="text-3xl font-display font-black text-white uppercase tracking-tighter">Configure Identity</h2>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-canvas-coral mt-1">Advanced Profile System</p>
