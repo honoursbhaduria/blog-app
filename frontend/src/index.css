@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Space Grotesk", "Inter", sans-serif;
+
+  --color-canvas-light: #F8F8F8;
+  --color-canvas-dark: #1C1C1C;
+  --color-canvas-coral: #E06A59;
+  --color-canvas-border: #E5E5E5;
+  --color-canvas-border-dark: #333333;
+}
+
+@layer base {
+  body {
+    @apply bg-canvas-light text-canvas-dark font-sans selection:bg-canvas-coral selection:text-white border-t-8 border-t-canvas-coral;
+  }
+
+  /* Utilities for the stark bordered aesthetic */
+  .brutal-border {
+    @apply border border-canvas-dark dark:border-canvas-light;
+  }
+
+  .pill-button {
+    @apply px-6 py-2 rounded-full border border-canvas-dark bg-transparent text-canvas-dark font-display font-semibold hover:bg-canvas-dark hover:text-canvas-light transition-colors uppercase tracking-widest text-sm inline-flex items-center justify-center;
+  }
+
+  .pill-button-coral {
+    @apply px-6 py-2 rounded-full border border-canvas-coral bg-canvas-coral text-white font-display font-semibold hover:bg-transparent hover:text-canvas-coral transition-colors uppercase tracking-widest text-sm inline-flex items-center justify-center;
+  }
+}
+
+/* Base resets */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply font-display font-bold tracking-tight text-canvas-dark;
+}
