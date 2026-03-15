@@ -484,23 +484,39 @@ class TrendingBlogView(views.APIView):
         blogs = Blog.objects.filter(status='Published')\
             .select_related('category', 'author')\
             .annotate(like_count=Count('likes'))\
-            .order_by('-like_count', '-created_at')[:6]
+            .order_by('-view_count', '-like_count', '-created_at')[:6]
         
         serializer = BlogSerializer(blogs, many=True)
         
         wiki_trending = []
         try:
-            summary_url = f'https://en.wikipedia.org/api/rest_v1/page/summary/Main_Page'
-            resp = requests.get(summary_url, timeout=5, headers=WIKI_HEADERS)
-            if resp.status_code == 200:
-                data = resp.json()
-                wiki_trending = [{
-                    'title': data.get('title'),
-                    'extract': data.get('extract'),
-                    'thumbnail': data.get('thumbnail', {}).get('source', ''),
-                    'page_url': data.get('content_urls', {}).get('desktop', {}).get('page', '')
-                }]
-        except: pass
+            technical_topics = [
+                'artificial intelligence',
+                'machine learning',
+                'python programming',
+                'cloud computing',
+                'cybersecurity',
+                'data science',
+                'software engineering',
+            ]
+
+            seen = set()
+            for topic in technical_topics:
+                for item in fetch_wikipedia_results(topic, limit=2):
+                    title = (item.get('title') or '').strip()
+                    if not title:
+                        continue
+                    key = title.lower()
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    wiki_trending.append(item)
+                    if len(wiki_trending) >= 6:
+                        break
+                if len(wiki_trending) >= 6:
+                    break
+        except Exception:
+            pass
 
         return Response({'blogs': serializer.data, 'wiki_trending': wiki_trending})
 

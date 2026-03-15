@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { blogService } from '../services/api';
 import { Heart, Sparkles, X, Bookmark, Eye, Clock, Link as LinkIcon, ExternalLink, Share2 } from 'lucide-react';
 import { getFullImageUrl } from '../utils/helpers';
 
 export default function SinglePost() {
     const { slug } = useParams();
+    const navigate = useNavigate();
     const [post, setPost] = useState(null);
     const [comments, setComments] = useState([]);
     
@@ -26,6 +27,12 @@ export default function SinglePost() {
         const fetchPostData = async () => {
             try {
                 const postRes = await blogService.getById(slug);
+
+                if (String(postRes.data?.source_type || '').toLowerCase() === 'wikipedia' && postRes.data?.title) {
+                    navigate(`/wiki/${encodeURIComponent(postRes.data.title)}`, { replace: true });
+                    return;
+                }
+
                 setPost(postRes.data);
 
                 const commentsRes = await blogService.getComments(slug);

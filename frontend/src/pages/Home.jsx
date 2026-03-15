@@ -84,6 +84,13 @@ export default function Home() {
     const mainFeature = featuredPosts?.length > 0 ? featuredPosts[0] : null;
     const allRecentPosts = posts || [];
 
+    const getPostLink = (post) => {
+        if (String(post?.source_type || '').toLowerCase() === 'wikipedia') {
+            return `/wiki/${encodeURIComponent(post.title)}`;
+        }
+        return `/post/${post.slug}`;
+    };
+
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
 
@@ -102,7 +109,7 @@ export default function Home() {
                     </h1>
                     <div className="mt-4 max-w-md">
                         <p className="font-display font-bold uppercase text-sm tracking-[0.2em] leading-relaxed text-canvas-coral">
-                            Art &bull; Music &bull; Design &bull; Photography
+                            Technology &bull; AI &bull; Programming &bull; Data Science
                         </p>
                     </div>
 
@@ -163,7 +170,7 @@ export default function Home() {
                             </p>
 
                             <div className="flex items-center gap-4">
-                                <Link to={`/post/${mainFeature.slug}`} className="px-8 py-4 bg-canvas-coral text-white text-xs font-black uppercase tracking-[0.2em] brutal-border border-2 border-canvas-dark shadow-[4px_4px_0px_0px_rgba(28,28,28,1)] hover:shadow-none transition-all">
+                                <Link to={getPostLink(mainFeature)} className="px-8 py-4 bg-canvas-coral text-white text-xs font-black uppercase tracking-[0.2em] brutal-border border-2 border-canvas-dark shadow-[4px_4px_0px_0px_rgba(28,28,28,1)] hover:shadow-none transition-all">
                                     Read Issue
                                 </Link>
                                 <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
@@ -256,7 +263,7 @@ export default function Home() {
                             <div className="text-[10px] font-bold font-display uppercase tracking-widest text-gray-400 mb-3">
                                 {new Date(post.created_at).toLocaleDateString()} &bull; By {post.author?.username}
                             </div>
-                            <Link to={`/post/${post.slug}`} className="block mb-4 flex-grow">
+                            <Link to={getPostLink(post)} className="block mb-4 flex-grow">
                                 <h3 className="text-2xl font-display font-bold text-canvas-dark leading-snug group-hover:text-canvas-coral transition-colors">
                                     {post.title}
                                 </h3>
@@ -264,7 +271,7 @@ export default function Home() {
                             <p className="text-sm font-medium text-gray-600 line-clamp-2 mb-6">
                                 {post.short_description}
                             </p>
-                            <Link to={`/post/${post.slug}`} className="inline-flex max-w-max px-5 py-2 rounded-full border border-canvas-dark text-xs font-bold uppercase tracking-widest hover:bg-canvas-dark hover:text-white transition-colors mt-auto">
+                            <Link to={getPostLink(post)} className="inline-flex max-w-max px-5 py-2 rounded-full border border-canvas-dark text-xs font-bold uppercase tracking-widest hover:bg-canvas-dark hover:text-white transition-colors mt-auto">
                                 Read More
                             </Link>
                         </div>
