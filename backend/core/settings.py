@@ -232,6 +232,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # Groq AI API Key
 GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
+FRONTEND_URL = os.getenv('FRONTEND_URL', '').strip()
 
 # CORS Settings
 CORS_ALLOW_ALL_ORIGINS = env_bool('CORS_ALLOW_ALL_ORIGINS', DEBUG)

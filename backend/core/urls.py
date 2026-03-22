@@ -2,10 +2,10 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf.urls.static import static
 from django.conf import settings
-from .api_views import health_check
+from .api_views import root_landing
 
 urlpatterns = [
-    path('', health_check, name='root_health_check'),
+    path('', root_landing, name='root_landing'),
     path('admin/', admin.site.urls),
     
     # API endpoints
