@@ -115,16 +115,6 @@ Base path: `/api/v1/`
 - `cd frontend && npm run build`
 - Verify login, post list, post detail, profile, wiki search, and AI endpoints from deployed frontend.
 
-### Render keep-alive cron (every 3 minutes)
-
-- A Render blueprint is included at `render.yaml`.
-- It defines:
-	- a web service (`blogging-system-api`)
-	- a cron service (`blogging-system-keepalive`) with schedule `*/3 * * * *`
-- The cron service calls:
-	- `<PING_URL>/api/v1/health/`
-- Set `PING_URL` to your actual Render web URL if it differs.
-
 ## Docker quick deploy
 
 1. Ensure `.env` is filled (especially `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `NEON_DATABASE_URL`, `GROQ_API_KEY`).

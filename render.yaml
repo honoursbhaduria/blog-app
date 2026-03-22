@@ -16,9 +16,17 @@ services:
     env: python
     rootDir: backend
     buildCommand: pip install -r ../requirements.txt
-    schedule: "*/3 * * * *"
+    schedule: "*/5 * * * *"
     startCommand: >-
-      python -c 'import os, urllib.request; base=os.environ.get("PING_URL", "https://blogging-system-api.onrender.com").rstrip("/"); urllib.request.urlopen(base + "/api/v1/health/", timeout=20)'
+      python -c 'import os,time,urllib.request; base=os.environ.get("PING_URL", "https://blogging-system-api.onrender.com").rstrip("/"); url=base + "/api/v1/health/"; ok=False
+for _ in range(3):
+    try:
+        urllib.request.urlopen(url, timeout=25)
+        ok=True
+        break
+    except Exception:
+        time.sleep(5)
+raise SystemExit(0 if ok else 1)'
     envVars:
       - key: PING_URL
         value: https://blogging-system-api.onrender.com

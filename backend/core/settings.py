@@ -48,7 +48,12 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-change-me')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env_bool('DJANGO_DEBUG', True)
 
-ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost')
+RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME', '').strip()
+allowed_hosts_default = '127.0.0.1,localhost'
+if RENDER_EXTERNAL_HOSTNAME:
+    allowed_hosts_default = f"{allowed_hosts_default},{RENDER_EXTERNAL_HOSTNAME}"
+
+ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', allowed_hosts_default)
 
 if not DEBUG and SECRET_KEY == 'django-insecure-change-me':
     raise ValueError('DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is False.')
@@ -219,6 +224,11 @@ GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
 CORS_ALLOW_ALL_ORIGINS = env_bool('CORS_ALLOW_ALL_ORIGINS', DEBUG)
 CORS_ALLOWED_ORIGINS = env_list('CORS_ALLOWED_ORIGINS', '')
 CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS', '')
+
+if RENDER_EXTERNAL_HOSTNAME:
+    render_origin = f"https://{RENDER_EXTERNAL_HOSTNAME}"
+    if render_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(render_origin)
 
 SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', not DEBUG)
 SESSION_COOKIE_SECURE = env_bool('SESSION_COOKIE_SECURE', not DEBUG)
