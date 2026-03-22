@@ -82,12 +82,12 @@ export default function Search() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mb-20">
             {/* Massive Search Header */}
             <div className="py-8 border-b-4 border-canvas-dark mb-12 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-                <h1 className="text-[4rem] md:text-[6rem] leading-none font-display font-black tracking-tighter uppercase text-canvas-dark">
+                <h1 className="text-[2.5rem] sm:text-[4rem] md:text-[6rem] leading-none font-display font-black tracking-tighter uppercase text-canvas-dark">
                     SEARCH
                 </h1>
 
                 <div className="flex-grow max-w-2xl w-full flex flex-col gap-4">
-                    <form onSubmit={handleSearch} className="flex relative group w-full shadow-[8px_8px_0px_0px_rgba(28,28,28,1)]">
+                    <form onSubmit={handleSearch} className="flex flex-col sm:flex-row group w-full shadow-[8px_8px_0px_0px_rgba(28,28,28,1)]">
                         <input
                             type="text"
                             value={inputValue}
@@ -95,7 +95,7 @@ export default function Search() {
                             placeholder="SEARCH THE KNOWLEDGE BASE..."
                             className="w-full bg-white text-canvas-dark brutal-border border-4 border-canvas-dark px-6 py-4 font-display font-black uppercase tracking-widest text-sm focus:outline-none focus:border-canvas-coral transition-colors"
                         />
-                        <button type="submit" className="absolute right-0 top-0 bottom-0 px-8 bg-canvas-dark text-white border-4 border-l-0 border-canvas-dark hover:bg-canvas-coral transition-colors">
+                        <button type="submit" className="sm:min-w-[88px] px-8 py-4 sm:py-0 bg-canvas-dark text-white border-4 sm:border-l-0 border-canvas-dark hover:bg-canvas-coral transition-colors flex items-center justify-center">
                             <SearchIcon size={24} className="stroke-[3px]" />
                         </button>
                     </form>
@@ -170,7 +170,7 @@ export default function Search() {
                     <div className="space-y-24">
                         {/* Blogs Results */}
                         <section>
-                            <div className="flex items-end justify-between border-b-8 border-canvas-dark pb-6 mb-12">
+                            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 border-b-8 border-canvas-dark pb-6 mb-12">
                                 <h2 className="text-4xl md:text-5xl font-display font-black uppercase tracking-tighter text-canvas-dark leading-none">
                                     System Results
                                 </h2>
@@ -214,8 +214,8 @@ export default function Search() {
                         {/* Wikipedia Results */}
                         {keyword && (
                             <section>
-                                <div className="flex items-end justify-between border-b-8 border-canvas-dark pb-6 mb-12">
-                                    <h2 className="text-4xl md:text-5xl font-display font-black uppercase tracking-tighter text-canvas-dark leading-none flex items-center gap-4">
+                                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 border-b-8 border-canvas-dark pb-6 mb-12">
+                                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-black uppercase tracking-tighter text-canvas-dark leading-none flex items-center gap-3 sm:gap-4">
                                         <BookOpen className="text-canvas-coral" size={48} strokeWidth={3} />
                                         Global DB
                                     </h2>

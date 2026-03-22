@@ -219,7 +219,7 @@ export default function SinglePost() {
                     )}
                 </div>
 
-                <h1 className="text-5xl sm:text-7xl font-display font-black text-canvas-dark leading-[0.9] tracking-tighter mb-8 uppercase">
+                <h1 className="text-3xl sm:text-5xl lg:text-7xl font-display font-black text-canvas-dark leading-[0.9] tracking-tighter mb-8 uppercase break-words">
                     {post.title}
                 </h1>
 
@@ -237,7 +237,7 @@ export default function SinglePost() {
                 </div>
             </header>
 
-            <div className="brutal-border border-4 bg-canvas-dark w-full h-[300px] md:h-[500px] relative mb-16 shadow-[12px_12px_0px_0px_rgba(28,28,28,1)]">
+            <div className="brutal-border border-4 bg-canvas-dark w-full h-[220px] sm:h-[300px] md:h-[500px] relative mb-16 shadow-[12px_12px_0px_0px_rgba(28,28,28,1)]">
                 <img src={getFullImageUrl(post.featured_image)} alt={post.title} className="absolute inset-0 w-full h-full object-cover grayscale mix-blend-luminosity opacity-90 hover:grayscale-0 hover:mix-blend-normal hover:opacity-100 transition-all duration-700" />
             </div>
 
@@ -324,10 +324,10 @@ export default function SinglePost() {
 
             {/* AI Explain Floating Trigger */}
             {selectedText && (
-                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-40">
+                <div className="fixed bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] sm:w-auto">
                     <button 
                         onClick={explainText}
-                        className="bg-canvas-dark text-white px-8 py-4 flex items-center space-x-3 shadow-[8px_8px_0px_0px_rgba(224,106,89,1)] brutal-border border-white border-2 hover:bg-canvas-coral transition-colors animate-bounce"
+                        className="w-full sm:w-auto bg-canvas-dark text-white px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-center space-x-3 shadow-[8px_8px_0px_0px_rgba(224,106,89,1)] brutal-border border-white border-2 hover:bg-canvas-coral transition-colors animate-bounce"
                     >
                         <Sparkles size={20} className="text-white" />
                         <span className="font-display font-black uppercase text-xs tracking-[0.2em]">Explain Selection</span>
@@ -337,8 +337,8 @@ export default function SinglePost() {
 
             {/* Comments Section */}
             <div className="max-w-3xl mx-auto mt-20 border-t-8 border-canvas-dark pt-12">
-                <div className="flex items-center justify-between mb-8">
-                    <h3 className="text-4xl font-display font-black tracking-tighter uppercase text-canvas-dark">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-8">
+                    <h3 className="text-2xl sm:text-4xl font-display font-black tracking-tighter uppercase text-canvas-dark">
                         Discourse
                     </h3>
                     <span className="text-xs font-bold uppercase tracking-widest text-gray-500">{post.comment_count} Entries</span>

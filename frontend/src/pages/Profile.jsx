@@ -216,10 +216,10 @@ export default function Profile() {
                     )}
                 </div>
                 
-                <div className="p-8 md:p-12 relative flex flex-col lg:flex-row gap-12 items-start bg-white">
+                <div className="p-6 sm:p-8 md:p-12 relative flex flex-col lg:flex-row gap-8 md:gap-12 items-start bg-white">
                     {/* Avatar Column */}
                     <div className="flex flex-col items-center">
-                        <div className="w-48 h-48 brutal-border border-4 border-canvas-dark bg-white -mt-32 relative z-10 shadow-[8px_8px_0px_0px_rgba(224,106,89,1)] overflow-hidden">
+                        <div className="w-36 h-36 sm:w-48 sm:h-48 brutal-border border-4 border-canvas-dark bg-white -mt-20 sm:-mt-32 relative z-10 shadow-[8px_8px_0px_0px_rgba(224,106,89,1)] overflow-hidden">
                             {profile.profile_image ? (
                                 <img src={getFullImageUrl(profile.profile_image)} alt={username} className="w-full h-full object-cover grayscale" />
                             ) : (
@@ -257,7 +257,7 @@ export default function Profile() {
                                     </span>
                                 )}
                             </div>
-                            <h1 className="text-5xl md:text-8xl font-display font-black text-canvas-dark uppercase tracking-tighter leading-[0.8] mb-4">
+                            <h1 className="text-3xl sm:text-5xl md:text-8xl font-display font-black text-canvas-dark uppercase tracking-tighter leading-[0.8] mb-4 break-words">
                                 {fullName}
                             </h1>
                             <div className="flex flex-wrap items-center gap-6 text-[10px] font-black uppercase tracking-widest text-canvas-coral font-display">
@@ -266,7 +266,7 @@ export default function Profile() {
                                 {profile.website && <a href={profile.website} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-gray-500 hover:text-canvas-dark transition-colors"><Globe size={14}/> {profile.website.replace(/^https?:\/\//, '')}</a>}
                                 {profile.public_email && <a href={`mailto:${profile.public_email}`} className="flex items-center gap-2 text-gray-500 hover:text-canvas-dark transition-colors"><Mail size={14}/> {profile.public_email}</a>}
                             </div>
-                            <div className="mt-4 flex items-center gap-3">
+                            <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
                                 {renderFriendButton(profile.user?.username, profile.friend_state)}
                                 <span className="px-3 py-2 bg-canvas-light text-canvas-dark text-[10px] font-bold uppercase tracking-widest brutal-border border border-canvas-dark">
                                     Friends: {profile.friends_count || 0}
@@ -312,7 +312,7 @@ export default function Profile() {
                     <Users className="text-canvas-coral" size={26} /> Friends & Invites
                 </h2>
 
-                <form onSubmit={runUserSearch} className="flex gap-3 mb-8">
+                <form onSubmit={runUserSearch} className="flex flex-col sm:flex-row gap-3 mb-8">
                     <input
                         type="text"
                         value={searchInput}
@@ -330,7 +330,7 @@ export default function Profile() {
                         <h3 className="text-xs font-display font-black uppercase tracking-widest text-canvas-coral mb-3">Search Results</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {searchResults.map((userItem) => (
-                                <div key={userItem.id} className="p-4 bg-canvas-light brutal-border border-2 border-canvas-dark flex items-center justify-between gap-3">
+                                <div key={userItem.id} className="p-4 bg-canvas-light brutal-border border-2 border-canvas-dark flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                     <div>
                                         <Link to={`/profile/${userItem.username}`} className="font-display font-black uppercase text-sm text-canvas-dark hover:text-canvas-coral">
                                             {userItem.first_name || userItem.last_name
@@ -339,7 +339,7 @@ export default function Profile() {
                                         </Link>
                                         <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">@{userItem.username}</div>
                                     </div>
-                                    {renderFriendButton(userItem.username, userItem.friend_state)}
+                                    <div className="w-full sm:w-auto">{renderFriendButton(userItem.username, userItem.friend_state)}</div>
                                 </div>
                             ))}
                         </div>

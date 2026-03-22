@@ -106,9 +106,9 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
 
             {/* Massive Heading Section */}
-            <div className="py-12 border-b-4 border-canvas-dark mb-16 flex flex-col md:flex-row md:items-end justify-between bg-white px-8 brutal-border border-2 mt-8 shadow-[8px_8px_0px_0px_rgba(28,28,28,1)]">
+            <div className="py-12 border-b-4 border-canvas-dark mb-16 flex flex-col md:flex-row md:items-end justify-between bg-white px-4 sm:px-6 md:px-8 brutal-border border-2 mt-8 shadow-[8px_8px_0px_0px_rgba(28,28,28,1)]">
                 <div>
-                    <h1 className="text-[5rem] md:text-[10rem] leading-[0.8] font-display font-black tracking-tighter uppercase text-canvas-dark">
+                    <h1 className="text-[2.75rem] sm:text-[4rem] md:text-[10rem] leading-[0.8] font-display font-black tracking-tighter uppercase text-canvas-dark break-words">
                         <span
                             className="text-transparent bg-clip-text [-webkit-background-clip:text] [-webkit-text-fill-color:transparent] bg-center bg-cover"
                             style={{
@@ -165,13 +165,13 @@ export default function Home() {
                     <div className="brutal-border border-4 bg-white flex flex-col lg:flex-row w-full shadow-[12px_12px_0px_0px_rgba(224,106,89,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all group overflow-hidden">
                         
                         {/* Text Box (Left) */}
-                        <div className="p-10 lg:p-16 lg:w-1/2 flex flex-col justify-center border-b-4 lg:border-b-0 lg:border-r-4 border-canvas-dark bg-white z-10">
+                        <div className="p-6 sm:p-8 lg:p-16 lg:w-1/2 flex flex-col justify-center border-b-4 lg:border-b-0 lg:border-r-4 border-canvas-dark bg-white z-10">
                             <div className="inline-block px-4 py-1 bg-canvas-dark text-white text-[10px] font-bold uppercase tracking-widest mb-8 self-start">
                                 Featured Edition
                             </div>
                             
                             <Link to={`/post/${mainFeature.slug}`}>
-                                <h2 className="text-5xl lg:text-7xl font-display font-black text-canvas-dark leading-[0.9] mb-8 hover:text-canvas-coral transition-colors uppercase tracking-tighter">
+                                <h2 className="text-3xl sm:text-4xl lg:text-7xl font-display font-black text-canvas-dark leading-[0.9] mb-8 hover:text-canvas-coral transition-colors uppercase tracking-tighter">
                                     {mainFeature.title}
                                 </h2>
                             </Link>
@@ -180,7 +180,7 @@ export default function Home() {
                                 {mainFeature.short_description}
                             </p>
 
-                            <div className="flex items-center gap-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                                 <Link to={getPostLink(mainFeature)} className="px-8 py-4 bg-canvas-coral text-white text-xs font-black uppercase tracking-[0.2em] brutal-border border-2 border-canvas-dark shadow-[4px_4px_0px_0px_rgba(28,28,28,1)] hover:shadow-none transition-all">
                                     Read Issue
                                 </Link>
@@ -209,7 +209,7 @@ export default function Home() {
                         <img src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=1000&auto=format&fit=crop" className="w-full h-full object-cover grayscale" alt="Podcast" />
                     </div>
                     <div className="w-full md:w-2/3">
-                         <h3 className="text-4xl font-display font-black uppercase tracking-tighter text-canvas-dark mb-4 leading-none">
+                                 <h3 className="text-2xl md:text-4xl font-display font-black uppercase tracking-tighter text-canvas-dark mb-4 leading-none">
                             Have You Heard Our Podcast Yet?
                          </h3>
                          <div className="space-y-3 mb-8">
@@ -230,7 +230,7 @@ export default function Home() {
                 
                 <div className="brutal-border border-4 bg-white p-8 flex flex-col justify-center items-center text-center shadow-[8px_8px_0px_0px_rgba(224,106,89,1)]">
                     <div className="text-[10px] font-bold uppercase tracking-widest text-canvas-coral mb-4">Contact</div>
-                    <h4 className="text-3xl font-display font-black uppercase leading-tight mb-6">Get In Touch</h4>
+                    <h4 className="text-2xl md:text-3xl font-display font-black uppercase leading-tight mb-6">Get In Touch</h4>
                     <a
                         href="mailto:honoursbhadauria@gmail.com"
                         className="w-full p-4 brutal-border border-2 border-canvas-dark mb-4 text-xs font-bold uppercase tracking-widest text-canvas-dark hover:bg-canvas-light transition-colors"
@@ -249,7 +249,7 @@ export default function Home() {
             </section>
 
             <section className="mt-24">
-                <div className="flex items-end justify-between border-b-4 border-canvas-dark pb-4 mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 border-b-4 border-canvas-dark pb-4 mb-8">
                     <h2 className="text-4xl md:text-5xl font-display font-black uppercase tracking-tighter text-canvas-dark leading-none">
                         Latest From Platform Users
                     </h2>
@@ -298,7 +298,7 @@ export default function Home() {
 
             {/* Wikipedia Blogs */}
             <section className="mt-24">
-                <div className="flex items-end justify-between border-b-4 border-canvas-dark pb-4 mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 border-b-4 border-canvas-dark pb-4 mb-8">
                     <h2 className="text-4xl md:text-5xl font-display font-black uppercase tracking-tighter text-canvas-dark leading-none">
                         Wikipedia Blogs
                     </h2>

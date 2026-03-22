@@ -68,18 +68,46 @@ export default function DashboardCategories() {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-8 border-b-4 border-canvas-dark pb-4">
-                <h2 className="text-4xl font-display font-black text-canvas-dark uppercase tracking-tighter flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8 border-b-4 border-canvas-dark pb-4">
+                <h2 className="text-2xl md:text-4xl font-display font-black text-canvas-dark uppercase tracking-tighter flex items-center gap-3 md:gap-4">
                     <FolderTree className="text-canvas-coral" size={32} strokeWidth={3} />
                     Categories
                 </h2>
-                <button onClick={openAddModal} className="flex items-center space-x-2 bg-canvas-dark hover:bg-canvas-coral text-white px-6 py-3 font-display font-black uppercase text-xs tracking-widest brutal-border border-2 border-canvas-dark shadow-[4px_4px_0px_0px_rgba(28,28,28,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
+                <button onClick={openAddModal} className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-canvas-dark hover:bg-canvas-coral text-white px-6 py-3 font-display font-black uppercase text-xs tracking-widest brutal-border border-2 border-canvas-dark shadow-[4px_4px_0px_0px_rgba(28,28,28,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
                     <Plus size={18} />
                     <span>Add New</span>
                 </button>
             </div>
 
-            <div className="brutal-border border-4 border-canvas-dark overflow-hidden shadow-[8px_8px_0px_0px_rgba(28,28,28,1)]">
+            <div className="md:hidden space-y-3">
+                {categories?.map((cat) => (
+                    <div key={cat.id} className="p-4 bg-white brutal-border border-2 border-canvas-dark shadow-[4px_4px_0px_0px_rgba(28,28,28,1)]">
+                        <div className="flex items-start justify-between gap-3">
+                            <div>
+                                <div className="text-sm font-display font-black text-canvas-dark uppercase">{cat.category_name}</div>
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">ID #{cat.id}</div>
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mt-1">Created {new Date(cat.created_at).toLocaleDateString()}</div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => openEditModal(cat)} className="p-2 text-canvas-dark hover:text-canvas-coral hover:bg-canvas-light brutal-border border-2 border-canvas-dark transition-colors">
+                                    <Pencil size={16} />
+                                </button>
+                                {cat.is_predefined ? (
+                                    <div className="p-2 text-gray-500 bg-gray-200 brutal-border border-2 border-canvas-dark" title="Predefined category is locked">
+                                        <Lock size={16} />
+                                    </div>
+                                ) : (
+                                    <button onClick={() => handleDelete(cat.id)} className="p-2 text-white bg-canvas-dark hover:bg-red-600 brutal-border border-2 border-canvas-dark transition-colors">
+                                        <Trash2 size={16} />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <div className="hidden md:block brutal-border border-4 border-canvas-dark overflow-x-auto shadow-[8px_8px_0px_0px_rgba(28,28,28,1)]">
                 <table className="min-w-full">
                     <thead>
                         <tr className="bg-canvas-dark text-white">

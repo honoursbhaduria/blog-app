@@ -138,7 +138,7 @@ export default function EditProfile() {
         <div className="max-w-5xl mx-auto py-10 px-4 sm:px-6 lg:px-8 mb-20">
             <div className="brutal-border border-4 border-canvas-dark bg-white shadow-[12px_12px_0px_0px_rgba(28,28,28,1)] overflow-hidden">
                 {/* Header */}
-                <div className="px-8 py-6 border-b-4 border-canvas-dark bg-white flex items-center justify-between">
+                <div className="px-6 sm:px-8 py-6 border-b-4 border-canvas-dark bg-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
                         <h2 className="text-3xl font-display font-black text-white uppercase tracking-tighter">Configure Identity</h2>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-canvas-coral mt-1">Advanced Profile System</p>
@@ -246,7 +246,7 @@ export default function EditProfile() {
                                 <input type="text" name="location" className="w-full px-4 py-3 bg-canvas-light brutal-border border-2 border-canvas-dark" value={profile.location} onChange={handleChange} placeholder="e.g. San Francisco, CA" />
                             </div>
                         </div>
-                        <div className="mt-6 p-4 bg-canvas-dark text-white brutal-border border-2 border-canvas-dark flex items-center justify-between">
+                        <div className="mt-6 p-4 bg-canvas-dark text-white brutal-border border-2 border-canvas-dark flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <span className="text-[10px] font-display font-black uppercase tracking-widest">Open to New Opportunities</span>
                             <input type="checkbox" name="open_to_opportunities" className="w-6 h-6 text-canvas-coral bg-transparent border-white focus:ring-canvas-coral" checked={profile.open_to_opportunities} onChange={handleChange} />
                         </div>

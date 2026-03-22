@@ -58,7 +58,7 @@ export default function Trending() {
 
             {/* Wikipedia Technical Trending Section */}
             <div className="mb-12 border-b-8 border-canvas-dark pb-6">
-                <h3 className="text-4xl md:text-5xl font-display font-black uppercase tracking-tighter text-canvas-dark leading-none">
+                <h3 className="text-3xl md:text-5xl font-display font-black uppercase tracking-tighter text-canvas-dark leading-none">
                     WIKIPEDIA TECH TRENDS
                 </h3>
             </div>
@@ -66,7 +66,7 @@ export default function Trending() {
             {wikiTrending.length > 0 ? (
                 <section className="mb-32">
                     {wikiTrending.map((wiki, idx) => (
-                        <div key={idx} className="brutal-border border-4 bg-white p-8 md:p-12 flex flex-col md:flex-row gap-12 items-center shadow-[12px_12px_0px_0px_rgba(28,28,28,1)]">
+                        <div key={idx} className="brutal-border border-4 bg-white p-6 md:p-12 flex flex-col md:flex-row gap-8 md:gap-12 items-center shadow-[12px_12px_0px_0px_rgba(28,28,28,1)]">
                             <div className="w-full md:w-1/3 aspect-square brutal-border border-4 overflow-hidden bg-canvas-dark">
                                 {wiki.thumbnail ? (
                                     <img
@@ -84,7 +84,7 @@ export default function Trending() {
                             </div>
                             <div className="w-full md:w-2/3">
                                 <div className="text-[10px] font-bold uppercase tracking-widest text-canvas-coral mb-4">GLOBAL TECH KNOWLEDGE INDEX</div>
-                                <h2 className="text-4xl md:text-6xl font-display font-black uppercase tracking-tighter text-canvas-dark mb-6 leading-none">
+                                <h2 className="text-3xl md:text-6xl font-display font-black uppercase tracking-tighter text-canvas-dark mb-6 leading-none break-words">
                                     {wiki.title}
                                 </h2>
                                 <p className="text-sm font-medium text-gray-600 mb-8 line-clamp-4 leading-relaxed">
@@ -105,7 +105,7 @@ export default function Trending() {
 
             {/* User Created Blogs Section */}
             <div className="mb-12 border-b-8 border-canvas-dark pb-6">
-                <div className="flex items-end justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
                     <h3 className="text-4xl md:text-5xl font-display font-black uppercase tracking-tighter text-canvas-dark leading-none">
                         USER COMPILATIONS
                     </h3>
@@ -158,7 +158,7 @@ export default function Trending() {
 
             {/* Contact Footer Section */}
             <div className="pt-20 border-t-4 border-canvas-dark text-center">
-                <h2 className="text-5xl md:text-7xl font-display font-black text-canvas-dark leading-[0.9] uppercase tracking-tighter mb-6">
+                <h2 className="text-3xl sm:text-5xl md:text-7xl font-display font-black text-canvas-dark leading-[0.9] uppercase tracking-tighter mb-6">
                     THE CANVAS
                 </h2>
 

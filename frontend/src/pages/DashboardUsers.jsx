@@ -146,7 +146,7 @@ export default function DashboardUsers() {
     if (accessDenied) {
         return (
             <div className="p-8 bg-white brutal-border border-4 border-canvas-dark shadow-[8px_8px_0px_0px_rgba(28,28,28,1)]">
-                <h2 className="text-3xl font-display font-black uppercase tracking-tighter text-canvas-dark mb-2">System Users</h2>
+                <h2 className="text-2xl md:text-3xl font-display font-black uppercase tracking-tighter text-canvas-dark mb-2">System Users</h2>
                 <p className="text-xs font-bold uppercase tracking-widest text-canvas-coral">Access denied. Only admins can manage system users.</p>
             </div>
         );
@@ -155,7 +155,7 @@ export default function DashboardUsers() {
     return (
         <div>
             <div className="flex justify-between items-center mb-8 border-b-4 border-canvas-dark pb-4">
-                <h2 className="text-4xl font-display font-black text-canvas-dark uppercase tracking-tighter flex items-center gap-4">
+                <h2 className="text-2xl md:text-4xl font-display font-black text-canvas-dark uppercase tracking-tighter flex items-center gap-3 md:gap-4">
                     <Users className="text-canvas-coral" size={32} strokeWidth={3} />
                     System Users
                 </h2>
@@ -187,7 +187,7 @@ export default function DashboardUsers() {
                 {friendSearchResults.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {friendSearchResults.map((userItem) => (
-                            <div key={userItem.id} className="p-4 bg-canvas-light brutal-border border-2 border-canvas-dark flex items-center justify-between gap-3">
+                            <div key={userItem.id} className="p-4 bg-canvas-light brutal-border border-2 border-canvas-dark flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                 <div>
                                     <Link to={`/profile/${userItem.username}`} className="font-display font-black uppercase text-sm text-canvas-dark hover:text-canvas-coral">
                                         {userItem.first_name || userItem.last_name
@@ -196,14 +196,49 @@ export default function DashboardUsers() {
                                     </Link>
                                     <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">@{userItem.username}</div>
                                 </div>
-                                {renderFriendButton(userItem.username, userItem.friend_state)}
+                                <div className="w-full sm:w-auto">{renderFriendButton(userItem.username, userItem.friend_state)}</div>
                             </div>
                         ))}
                     </div>
                 )}
             </div>
 
-            <div className="brutal-border border-4 border-canvas-dark overflow-hidden shadow-[8px_8px_0px_0px_rgba(28,28,28,1)]">
+            <div className="md:hidden space-y-3">
+                {users.map((user) => (
+                    <div key={user.id} className="p-4 bg-white brutal-border border-2 border-canvas-dark shadow-[4px_4px_0px_0px_rgba(28,28,28,1)]">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                            <div>
+                                <div className="text-sm font-display font-black text-canvas-dark uppercase">{user.username}</div>
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 break-all">{user.email}</div>
+                            </div>
+                            <div>
+                                {user.is_superuser ? (
+                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-canvas-coral text-white text-[10px] font-bold uppercase tracking-widest brutal-border border border-canvas-dark">
+                                        <ShieldAlert size={12} /> Admin
+                                    </span>
+                                ) : user.is_staff ? (
+                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-canvas-dark text-white text-[10px] font-bold uppercase tracking-widest brutal-border border border-canvas-dark">
+                                        <ShieldCheck size={12} /> Staff
+                                    </span>
+                                ) : (
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Regular</span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-2">
+                            <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-widest brutal-border border border-canvas-dark ${user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                {user.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                                Joined {new Date(user.date_joined).toLocaleDateString()}
+                            </span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <div className="hidden md:block brutal-border border-4 border-canvas-dark overflow-x-auto shadow-[8px_8px_0px_0px_rgba(28,28,28,1)]">
                 <table className="min-w-full">
                     <thead>
                         <tr className="bg-canvas-dark text-white">

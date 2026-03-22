@@ -40,11 +40,11 @@ export default function CategoryPosts() {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mb-20 bg-canvas-light text-canvas-dark">
             {/* Category Header */}
-            <div className="py-12 border-b-4 border-canvas-dark mb-16 flex flex-col items-center justify-center bg-white px-8 brutal-border border-2 mt-8 shadow-[8px_8px_0px_0px_rgba(28,28,28,1)]">
+            <div className="py-12 border-b-4 border-canvas-dark mb-16 flex flex-col items-center justify-center bg-white px-4 sm:px-8 brutal-border border-2 mt-8 shadow-[8px_8px_0px_0px_rgba(28,28,28,1)]">
                 <div className="text-[10px] font-bold font-display uppercase tracking-widest text-canvas-coral mb-4">
                     Category Archive
                 </div>
-                <h1 className="text-[4rem] md:text-[7rem] leading-none font-display font-black tracking-tighter uppercase text-canvas-dark text-center">
+                <h1 className="text-[2.5rem] sm:text-[4rem] md:text-[7rem] leading-none font-display font-black tracking-tighter uppercase text-canvas-dark text-center break-words">
                     {category ? category.category_name : 'Unknown'}
                 </h1>
             </div>

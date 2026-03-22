@@ -162,7 +162,7 @@ export default function WikiArticle() {
                         Wikipedia Reference
                     </div>
 
-                    <h1 className="text-[3rem] md:text-[5rem] leading-[1.1] font-display font-black tracking-tighter text-canvas-dark mb-6">
+                    <h1 className="text-[2.25rem] sm:text-[3rem] md:text-[5rem] leading-[1.1] font-display font-black tracking-tighter text-canvas-dark mb-6 break-words">
                         {article.title}
                     </h1>
 
@@ -255,10 +255,10 @@ export default function WikiArticle() {
             </div>
 
             {selectedText && (
-                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-40">
+                <div className="fixed bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] sm:w-auto">
                     <button
                         onClick={explainSelection}
-                        className="bg-canvas-dark text-white px-8 py-4 flex items-center space-x-3 shadow-[8px_8px_0px_0px_rgba(224,106,89,1)] brutal-border border-white border-2 hover:bg-canvas-coral transition-colors"
+                        className="w-full sm:w-auto bg-canvas-dark text-white px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-center space-x-3 shadow-[8px_8px_0px_0px_rgba(224,106,89,1)] brutal-border border-white border-2 hover:bg-canvas-coral transition-colors"
                     >
                         <Sparkles size={20} className="text-white" />
                         <span className="font-display font-black uppercase text-xs tracking-[0.2em]">Explain Selection</span>
