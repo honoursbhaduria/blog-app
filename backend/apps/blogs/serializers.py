@@ -47,12 +47,20 @@ class BlogSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_like_count(self, obj):
+        # Use annotated value if present, otherwise fall back to queryset
+        if hasattr(obj, 'like_count_annotated'):
+            return obj.like_count_annotated
         return obj.likes.count()
 
     def get_comment_count(self, obj):
+        # Could be annotated in queryset if needed
+        if hasattr(obj, 'comment_count_annotated'):
+            return obj.comment_count_annotated
         return Comment.objects.filter(blog=obj).count()
 
     def get_favorite_count(self, obj):
+        if hasattr(obj, 'favorite_count_annotated'):
+            return obj.favorite_count_annotated
         return obj.favorited_by.count()
 
     def get_read_time(self, obj):

@@ -4,6 +4,73 @@ import { blogService } from '../services/api';
 import { Heart, Sparkles, X, Bookmark, Eye, Clock, Link as LinkIcon, ExternalLink, Share2 } from 'lucide-react';
 import { getFullImageUrl } from '../utils/helpers';
 
+const escapeHtml = (value = '') => value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const applyInlineMarkdown = (line = '') => {
+    const escaped = escapeHtml(line);
+    return escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+};
+
+const renderMarkdownLite = (markdown = '') => {
+    const lines = String(markdown || '').split('\n');
+    const htmlParts = [];
+    let inList = false;
+
+    const closeListIfOpen = () => {
+        if (inList) {
+            htmlParts.push('</ul>');
+            inList = false;
+        }
+    };
+
+    lines.forEach((line) => {
+        const trimmed = line.trim();
+
+        if (!trimmed) {
+            closeListIfOpen();
+            htmlParts.push('<div class="h-4"></div>');
+            return;
+        }
+
+        const listMatch = trimmed.match(/^(\*|\+|-)\s+(.+)$/);
+        if (listMatch) {
+            if (!inList) {
+                htmlParts.push('<ul class="list-disc pl-6 my-4 space-y-2">');
+                inList = true;
+            }
+            htmlParts.push(`<li>${applyInlineMarkdown(listMatch[2])}</li>`);
+            return;
+        }
+
+        closeListIfOpen();
+
+        if (/^###\s+/.test(trimmed)) {
+            htmlParts.push(`<h3 class="text-2xl font-display font-black uppercase tracking-tight mt-8 mb-4">${applyInlineMarkdown(trimmed.replace(/^###\s+/, ''))}</h3>`);
+            return;
+        }
+
+        if (/^##\s+/.test(trimmed)) {
+            htmlParts.push(`<h2 class="text-3xl font-display font-black uppercase tracking-tight mt-10 mb-5">${applyInlineMarkdown(trimmed.replace(/^##\s+/, ''))}</h2>`);
+            return;
+        }
+
+        if (/^#\s+/.test(trimmed)) {
+            htmlParts.push(`<h1 class="text-4xl font-display font-black uppercase tracking-tight mt-10 mb-6">${applyInlineMarkdown(trimmed.replace(/^#\s+/, ''))}</h1>`);
+            return;
+        }
+
+        htmlParts.push(`<p class="my-4">${applyInlineMarkdown(trimmed)}</p>`);
+    });
+
+    closeListIfOpen();
+    return htmlParts.join('');
+};
+
 export default function SinglePost() {
     const { slug } = useParams();
     const navigate = useNavigate();
@@ -185,7 +252,10 @@ export default function SinglePost() {
                         <p className="text-2xl font-display font-bold leading-relaxed mb-10 text-canvas-coral border-l-4 border-canvas-coral pl-6 italic">
                             {post.short_description}
                         </p>
-                        <div className="text-lg leading-loose" dangerouslySetInnerHTML={{ __html: post.blog_body.replace(/\n/g, '<br/>') }} />
+                        <div
+                            className="text-lg leading-loose"
+                            dangerouslySetInnerHTML={{ __html: renderMarkdownLite(post.blog_body) }}
+                        />
                     </div>
                 </div>
                 

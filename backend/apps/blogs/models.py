@@ -78,6 +78,15 @@ class Blog(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['status', '-created_at']),
+            models.Index(fields=['author', 'status', '-created_at']),
+            models.Index(fields=['source_type', 'status']),
+            models.Index(fields=['is_featured', '-created_at']),
+            models.Index(fields=['view_count']),
+        ]
+
     def __str__(self):
         return self.title
 
@@ -116,6 +125,10 @@ class Favorite(models.Model):
 
     class Meta:
         unique_together = ('user', 'blog')
+        indexes = [
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['blog']),
+        ]
 
     def __str__(self):
         return f"{self.user.username} favorited {self.blog.title}"
@@ -126,6 +139,12 @@ class Comment(models.Model):
     comment = models.TextField(max_length=250)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['blog', '-created_at']),
+            models.Index(fields=['user', '-created_at']),
+        ]
 
     def __str__(self):
         return self.comment
@@ -138,6 +157,10 @@ class Like(models.Model):
 
     class Meta:
         unique_together = ('user', 'blog')
+        indexes = [
+            models.Index(fields=['blog']),
+            models.Index(fields=['user', '-created_at']),
+        ]
 
     def __str__(self):
         return f"{self.user.username} likes {self.blog.title}"
@@ -165,6 +188,11 @@ class SavedWikiArticle(models.Model):
     class Meta:
         ordering = ['board_order']
         unique_together = ('user', 'title')
+        indexes = [
+            models.Index(fields=['user', 'board_column', 'board_order']),
+            models.Index(fields=['user', '-updated_at']),
+            models.Index(fields=['user', 'liked']),
+        ]
 
     def __str__(self):
         return f"{self.user.username} saved: {self.title}"

@@ -35,6 +35,37 @@ def get_friend_state_for_user(request_user, target_user):
 
     return 'none'
 
+
+def get_friend_state_map_for_user(request_user, target_user_ids):
+    if not request_user or not request_user.is_authenticated:
+        return {}
+
+    target_ids = {user_id for user_id in target_user_ids if user_id and user_id != request_user.id}
+    if not target_ids:
+        return {}
+
+    relations = FriendRequest.objects.filter(
+        Q(sender=request_user, receiver_id__in=target_ids)
+        | Q(receiver=request_user, sender_id__in=target_ids)
+    ).values('sender_id', 'receiver_id', 'status')
+
+    states = {}
+    for relation in relations:
+        other_id = relation['receiver_id'] if relation['sender_id'] == request_user.id else relation['sender_id']
+        if other_id in states:
+            if states[other_id] == 'friends':
+                continue
+
+        if relation['status'] == FriendRequest.STATUS_ACCEPTED:
+            states[other_id] = 'friends'
+        elif relation['status'] == FriendRequest.STATUS_PENDING:
+            if relation['sender_id'] == request_user.id:
+                states[other_id] = 'outgoing_pending'
+            else:
+                states[other_id] = 'incoming_pending'
+
+    return states
+
 class ProfileUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -95,6 +126,9 @@ class UserSearchSerializer(serializers.ModelSerializer):
     def get_friend_state(self, obj):
         request = self.context.get('request')
         request_user = getattr(request, 'user', None)
+        friend_state_map = self.context.get('friend_state_map') or {}
+        if obj.id in friend_state_map:
+            return friend_state_map[obj.id]
         return get_friend_state_for_user(request_user, obj)
 
 

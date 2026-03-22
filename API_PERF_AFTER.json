@@ -1,0 +1,258 @@
+{
+  "generated_at": "2026-03-22 11:22:21",
+  "base": "http://127.0.0.1:8001/api/v1/",
+  "register_status": 201,
+  "login_status": 200,
+  "created_user": "perf_hj7jma",
+  "benchmarks": [
+    {
+      "name": "auth_login",
+      "endpoint": "auth/login/",
+      "method": "POST",
+      "samples": 5,
+      "avg_ms": 531.96,
+      "p95_ms": 535.95,
+      "success_rate": 1.0,
+      "error_rate": 0.0,
+      "client_error_rate": 0.0,
+      "throughput_rps": 1.81,
+      "status_breakdown": {
+        "200": 5
+      }
+    },
+    {
+      "name": "auth_refresh",
+      "endpoint": "auth/refresh/",
+      "method": "POST",
+      "samples": 5,
+      "avg_ms": 517.52,
+      "p95_ms": 511.75,
+      "success_rate": 1.0,
+      "error_rate": 0.0,
+      "client_error_rate": 0.0,
+      "throughput_rps": 1.83,
+      "status_breakdown": {
+        "200": 5
+      }
+    },
+    {
+      "name": "blogs_posts_list",
+      "endpoint": "blogs/posts/",
+      "method": "GET",
+      "samples": 5,
+      "avg_ms": 700.04,
+      "p95_ms": 600.24,
+      "success_rate": 1.0,
+      "error_rate": 0.0,
+      "client_error_rate": 0.0,
+      "throughput_rps": 1.68,
+      "status_breakdown": {
+        "200": 5
+      }
+    },
+    {
+      "name": "blogs_trending",
+      "endpoint": "blogs/trending/",
+      "method": "GET",
+      "samples": 5,
+      "avg_ms": 2719.23,
+      "p95_ms": 5003.26,
+      "success_rate": 0.6,
+      "error_rate": 0.4,
+      "client_error_rate": 0.0,
+      "throughput_rps": 1.69,
+      "status_breakdown": {
+        "200": 3
+      }
+    },
+    {
+      "name": "blogs_stats",
+      "endpoint": "blogs/stats/",
+      "method": "GET",
+      "samples": 5,
+      "avg_ms": 607.13,
+      "p95_ms": 556.14,
+      "success_rate": 1.0,
+      "error_rate": 0.0,
+      "client_error_rate": 0.0,
+      "throughput_rps": 1.8,
+      "status_breakdown": {
+        "200": 5
+      }
+    },
+    {
+      "name": "blogs_categories",
+      "endpoint": "blogs/categories/",
+      "method": "GET",
+      "samples": 5,
+      "avg_ms": 657.58,
+      "p95_ms": 555.9,
+      "success_rate": 1.0,
+      "error_rate": 0.0,
+      "client_error_rate": 0.0,
+      "throughput_rps": 1.8,
+      "status_breakdown": {
+        "200": 5
+      }
+    },
+    {
+      "name": "blogs_tags",
+      "endpoint": "blogs/tags/",
+      "method": "GET",
+      "samples": 5,
+      "avg_ms": 607.92,
+      "p95_ms": 564.18,
+      "success_rate": 1.0,
+      "error_rate": 0.0,
+      "client_error_rate": 0.0,
+      "throughput_rps": 1.58,
+      "status_breakdown": {
+        "200": 5
+      }
+    },
+    {
+      "name": "profiles_edit",
+      "endpoint": "profiles/edit/",
+      "method": "GET",
+      "samples": 5,
+      "avg_ms": 763.98,
+      "p95_ms": 699.78,
+      "success_rate": 1.0,
+      "error_rate": 0.0,
+      "client_error_rate": 0.0,
+      "throughput_rps": 0.98,
+      "status_breakdown": {
+        "200": 5
+      }
+    },
+    {
+      "name": "profiles_friends",
+      "endpoint": "profiles/friends/",
+      "method": "GET",
+      "samples": 5,
+      "avg_ms": 819.91,
+      "p95_ms": 859.55,
+      "success_rate": 1.0,
+      "error_rate": 0.0,
+      "client_error_rate": 0.0,
+      "throughput_rps": 1.73,
+      "status_breakdown": {
+        "200": 5
+      }
+    }
+  ],
+  "reachability": [
+    {
+      "method": "GET",
+      "endpoint": "blogs/random-wiki/",
+      "status": 200,
+      "latency_ms": 1424.15,
+      "transport_ok": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "endpoint": "blogs/search-wiki/",
+      "status": 200,
+      "latency_ms": 6755.93,
+      "transport_ok": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "endpoint": "blogs/users/",
+      "status": 200,
+      "latency_ms": 863.61,
+      "transport_ok": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "endpoint": "blogs/users/",
+      "status": 400,
+      "latency_ms": 820.25,
+      "transport_ok": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "endpoint": "blogs/clusters/",
+      "status": 200,
+      "latency_ms": 851.81,
+      "transport_ok": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "endpoint": "blogs/clusters/",
+      "status": 201,
+      "latency_ms": 1871.91,
+      "transport_ok": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "endpoint": "blogs/saved-wiki/",
+      "status": 200,
+      "latency_ms": 844.1,
+      "transport_ok": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "endpoint": "blogs/saved-wiki/",
+      "status": 201,
+      "latency_ms": 1084.16,
+      "transport_ok": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "endpoint": "profiles/perf_hj7jma/",
+      "status": 200,
+      "latency_ms": 1731.86,
+      "transport_ok": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "endpoint": "profiles/perf_hj7jma/blogs/",
+      "status": 200,
+      "latency_ms": 1131.86,
+      "transport_ok": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "endpoint": "profiles/perf_hj7jma/favorites/",
+      "status": 200,
+      "latency_ms": 1079.99,
+      "transport_ok": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "endpoint": "profiles/users/search/",
+      "status": null,
+      "latency_ms": 8007.04,
+      "transport_ok": false,
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8001): Read timed out. (read timeout=8)"
+    },
+    {
+      "method": "GET",
+      "endpoint": "profiles/friends/requests/",
+      "status": 200,
+      "latency_ms": 2446.17,
+      "transport_ok": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "endpoint": "profiles/friends/perf_hj7jma/invite/",
+      "status": 400,
+      "latency_ms": 1006.44,
+      "transport_ok": true,
+      "error": null
+    }
+  ]
+}

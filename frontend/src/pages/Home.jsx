@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { blogService } from '../services/api';
 import { getFullImageUrl } from '../utils/helpers';
-import canvasTextFill from '../assets/canvas-text-fill.png';
+import canvasTextFill from '../assets/canvas-spiderman.jpg';
 
 const WIKI_FALLBACK_IMAGE = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/512px-Wikipedia-logo-v2.svg.png';
 
@@ -24,20 +24,31 @@ export default function Home() {
 
         const fetchPosts = async () => {
             try {
-                const [featuredRes, postsRes, wikiRes] = await Promise.all([
+                const [featuredRes, postsRes, liveWikiRes, savedWikiRes] = await Promise.all([
                     blogService.getAll({ featured: 'true' }),
                     blogService.getAll(),
-                    blogService.getRandomWiki(8)
+                    blogService.getRandomWiki(8),
+                    blogService.getAll({ source_type: 'Wikipedia' })
                 ]);
 
-                const wikiPosts = Array.isArray(wikiRes.data)
-                    ? wikiRes.data.slice(0, 8)
-                    : [];
+                // Merge live wiki items and saved wiki items
+                const liveWikiItems = Array.isArray(liveWikiRes.data) ? liveWikiRes.data : [];
+                const savedWikiItems = Array.isArray(savedWikiRes.data) ? savedWikiRes.data : [];
                 
-                // Ensure we always have arrays to avoid spread/map crashes
+                // Map saved items to look like wiki results for consistent rendering
+                const mappedSaved = savedWikiItems.map(item => ({
+                    title: item.title,
+                    extract: item.short_description,
+                    thumbnail: item.featured_image,
+                    is_local: true,
+                    slug: item.slug
+                }));
+
+                const combinedWiki = [...mappedSaved, ...liveWikiItems].slice(0, 9);
+                
                 setFeaturedPosts(Array.isArray(featuredRes.data) ? featuredRes.data : []);
                 setPosts(Array.isArray(postsRes.data) ? postsRes.data : []);
-                setWikipediaPosts(wikiPosts);
+                setWikipediaPosts(combinedWiki);
             } catch (error) {
                 console.error("Error fetching posts:", error);
             } finally {
@@ -252,7 +263,7 @@ export default function Home() {
                 {allRecentPosts.map((post) => (
                     <article key={post.id} className="brutal-border border-r-2 border-b-2 border-t-0 border-l-0 bg-white group hover:bg-canvas-light transition-colors flex flex-col">
                         <div className="h-64 border-b-2 border-canvas-dark overflow-hidden bg-canvas-dark relative">
-                            <img src={getFullImageUrl(post.featured_image)} alt={post.title} className="w-full h-full object-cover grayscale mix-blend-luminosity group-hover:grayscale-0 group-hover:mix-blend-normal transition-all duration-500 hover:scale-105" />
+                            <img src={getFullImageUrl(post.featured_image)} alt={post.title} className="w-full h-full object-cover transition-all duration-500 hover:scale-105" />
                             <div className="absolute top-4 left-4">
                                 <span className="bg-canvas-coral text-white border border-canvas-dark px-3 py-1 text-[10px] font-bold uppercase tracking-widest shadow-[2px_2px_0px_0px_rgba(28,28,28,1)]">
                                     {post.category?.category_name}
@@ -311,7 +322,7 @@ export default function Home() {
                                             event.currentTarget.src = WIKI_FALLBACK_IMAGE;
                                         }}
                                         alt={post.title}
-                                        className="w-full h-full object-cover grayscale mix-blend-luminosity group-hover:grayscale-0 group-hover:mix-blend-normal transition-all duration-500 hover:scale-105"
+                                        className="w-full h-full object-cover transition-all duration-500 hover:scale-105"
                                     />
                                     <div className="absolute top-4 left-4">
                                         <span className="bg-canvas-coral text-white border border-canvas-dark px-3 py-1 text-[10px] font-bold uppercase tracking-widest shadow-[2px_2px_0px_0px_rgba(28,28,28,1)]">
@@ -319,22 +330,22 @@ export default function Home() {
                                         </span>
                                     </div>
                                 </div>
-                                <div className="p-6 flex flex-col flex-grow">
-                                    <div className="text-[10px] font-bold font-display uppercase tracking-widest text-gray-400 mb-3">
-                                        Live Wikipedia &bull; Random Feed
+                                    <div className="p-6 flex flex-col flex-grow">
+                                        <div className="text-[10px] font-bold font-display uppercase tracking-widest text-gray-400 mb-3">
+                                            {post.is_local ? 'Saved Knowledge' : 'Live Wikipedia'} &bull; {post.is_local ? 'Local Archive' : 'Random Feed'}
+                                        </div>
+                                        <Link to={post.is_local ? `/post/${post.slug}` : `/wiki/${encodeURIComponent(post.title)}`} className="block mb-4 flex-grow">
+                                            <h3 className="text-2xl font-display font-bold text-canvas-dark leading-snug group-hover:text-canvas-coral transition-colors">
+                                                {post.title}
+                                            </h3>
+                                        </Link>
+                                        <p className="text-sm font-medium text-gray-600 line-clamp-2 mb-6">
+                                            {post.extract || 'No summary available.'}
+                                        </p>
+                                        <Link to={post.is_local ? `/post/${post.slug}` : `/wiki/${encodeURIComponent(post.title)}`} className="inline-flex max-w-max px-5 py-2 rounded-full border border-canvas-dark text-xs font-bold uppercase tracking-widest hover:bg-canvas-dark hover:text-white transition-colors mt-auto">
+                                            {post.is_local ? 'Read Blog' : 'Explore Wiki'}
+                                        </Link>
                                     </div>
-                                    <Link to={`/wiki/${encodeURIComponent(post.title)}`} className="block mb-4 flex-grow">
-                                        <h3 className="text-2xl font-display font-bold text-canvas-dark leading-snug group-hover:text-canvas-coral transition-colors">
-                                            {post.title}
-                                        </h3>
-                                    </Link>
-                                    <p className="text-sm font-medium text-gray-600 line-clamp-2 mb-6">
-                                        {post.extract || 'No summary available.'}
-                                    </p>
-                                    <Link to={`/wiki/${encodeURIComponent(post.title)}`} className="inline-flex max-w-max px-5 py-2 rounded-full border border-canvas-dark text-xs font-bold uppercase tracking-widest hover:bg-canvas-dark hover:text-white transition-colors mt-auto">
-                                        Read More
-                                    </Link>
-                                </div>
                             </article>
                             );
                         })}

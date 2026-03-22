@@ -1,6 +1,11 @@
 import json
 import re
 import requests
+import wikipediaapi
+from concurrent.futures import ThreadPoolExecutor
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+from django.core.cache import cache
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -10,8 +15,65 @@ from groq import Groq
 
 
 WIKI_HEADERS = {
-    'User-Agent': 'DjangoBlogApp/1.0 (Blog Platform; contact@example.com)'
+    'User-Agent': 'DjangoBlogApp/1.0 (https://example.com/blog; contact@example.com)'
 }
+
+WIKI_SESSION = requests.Session()
+_wiki_retry = Retry(
+    total=1,
+    connect=1,
+    read=1,
+    backoff_factor=0.1,
+    status_forcelist=[429, 500, 502, 503, 504],
+    allowed_methods=frozenset(['GET']),
+)
+_wiki_adapter = HTTPAdapter(pool_connections=24, pool_maxsize=24, max_retries=_wiki_retry)
+WIKI_SESSION.mount('https://', _wiki_adapter)
+WIKI_SESSION.mount('http://', _wiki_adapter)
+
+# Initialize wikipedia-api
+# The library requires a proper User-Agent
+wiki_en = wikipediaapi.Wikipedia(
+    user_agent='DjangoBlogApp/1.0 (https://example.com/blog; contact@example.com)',
+    language='en',
+    extract_format=wikipediaapi.ExtractFormat.WIKI
+)
+
+def fetch_single_wiki_detail(title):
+    """Fetch details for a single wikipedia page."""
+    try:
+        # Check cache first for this specific title
+        cache_key = f"wiki_detail_{re.sub(r'\W+', '_', title.lower())}"
+        cached_detail = cache.get(cache_key)
+        if cached_detail:
+            return cached_detail
+
+        page = wiki_en.page(title)
+        if not page.exists():
+            return None
+        
+        # Thumbnail still needs the REST API
+        summary_url = f'https://en.wikipedia.org/api/rest_v1/page/summary/{requests.utils.quote(title)}'
+        thumbnail = ''
+        try:
+            summary_resp = WIKI_SESSION.get(summary_url, timeout=1.5, headers=WIKI_HEADERS)
+            if summary_resp.status_code == 200:
+                thumbnail = summary_resp.json().get('thumbnail', {}).get('source', '')
+        except:
+            pass
+
+        result = {
+            'title': page.title,
+            'extract': page.summary[:500] if page.summary else '',
+            'thumbnail': thumbnail,
+            'page_url': page.fullurl,
+        }
+        
+        # Cache for 1 hour
+        cache.set(cache_key, result, 3600)
+        return result
+    except:
+        return None
 
 
 def sanitize_wikipedia_html(raw_html):
@@ -44,6 +106,13 @@ def fetch_wikipedia_results(query, limit=4):
     if not query:
         return []
 
+    # Check cache for this search query
+    search_cache_key = f"wiki_search_{re.sub(r'\W+', '_', query.lower())}_{limit}"
+    cached_results = cache.get(search_cache_key)
+    if cached_results:
+        return cached_results
+
+    # wikipedia-api doesn't have search, so we still use requests for the search part
     search_url = 'https://en.wikipedia.org/w/api.php'
     search_params = {
         'action': 'query',
@@ -54,33 +123,27 @@ def fetch_wikipedia_results(query, limit=4):
         'utf8': 1,
     }
 
-    search_resp = requests.get(search_url, params=search_params, timeout=10, headers=WIKI_HEADERS)
-    if search_resp.status_code != 200:
+    try:
+        search_resp = WIKI_SESSION.get(search_url, params=search_params, timeout=1.8, headers=WIKI_HEADERS)
+        if search_resp.status_code != 200:
+            return []
+
+        search_data = search_resp.json()
+        search_results = search_data.get('query', {}).get('search', [])
+        if not search_results:
+            return []
+
+        # Use ThreadPoolExecutor for parallel detail fetching
+        titles = [item['title'] for item in search_results]
+        with ThreadPoolExecutor(max_workers=min(len(titles), 10)) as executor:
+            results = list(filter(None, executor.map(fetch_single_wiki_detail, titles)))
+        
+        # Cache search results for 10 minutes
+        cache.set(search_cache_key, results, 600)
+        return results
+    except Exception as e:
+        print(f"Wiki search error: {e}")
         return []
-
-    search_data = search_resp.json()
-    search_results = search_data.get('query', {}).get('search', [])
-    if not search_results:
-        return []
-
-    results = []
-    for item in search_results:
-        title = item['title']
-        summary_url = f'https://en.wikipedia.org/api/rest_v1/page/summary/{requests.utils.quote(title)}'
-        try:
-            summary_resp = requests.get(summary_url, timeout=10, headers=WIKI_HEADERS)
-            if summary_resp.status_code == 200:
-                summary_data = summary_resp.json()
-                results.append({
-                    'title': summary_data.get('title', title),
-                    'extract': summary_data.get('extract', ''),
-                    'thumbnail': summary_data.get('thumbnail', {}).get('source', ''),
-                    'page_url': summary_data.get('content_urls', {}).get('desktop', {}).get('page', ''),
-                })
-        except requests.RequestException:
-            continue
-
-    return results
 
 
 @csrf_exempt
@@ -153,7 +216,8 @@ def wiki_article(request, title):
     """
     Fetch and display a full Wikipedia article on the website.
     """
-    encoded_title = requests.utils.quote(title)
+    page = wiki_en.page(title)
+    
     article_data = {
         'title': title,
         'html_content': '',
@@ -165,20 +229,28 @@ def wiki_article(request, title):
         'related': [],
     }
 
-    try:
-        # Get the summary for metadata
-        summary_url = f'https://en.wikipedia.org/api/rest_v1/page/summary/{encoded_title}'
-        summary_resp = requests.get(summary_url, timeout=10, headers=WIKI_HEADERS)
-        if summary_resp.status_code == 200:
-            summary_data = summary_resp.json()
-            article_data['title'] = summary_data.get('title', title)
-            article_data['extract'] = summary_data.get('extract', '')
-            article_data['description'] = summary_data.get('description', '')
-            article_data['thumbnail'] = summary_data.get('thumbnail', {}).get('source', '')
-            article_data['original_image'] = summary_data.get('originalimage', {}).get('source', '')
-            article_data['original_url'] = summary_data.get('content_urls', {}).get('desktop', {}).get('page', '')
+    if not page.exists():
+        return render(request, 'wiki_article.html', {'article': article_data})
 
-        # Get article content using parse API (cleaner than mobile-html full document)
+    article_data['title'] = page.title
+    article_data['extract'] = page.summary
+    article_data['original_url'] = page.fullurl
+    
+    # Get related (links)
+    article_data['related'] = list(page.links.keys())[:10]
+
+    try:
+        # wikipedia-api doesn't provide HTML content easily in the same way, 
+        # but we can still use the MediaWiki API for the full HTML to preserve formatting
+        # or use page.text but that loses HTML formatting.
+        # User wants to "use wikipedia api for all this", but for rich HTML content 
+        # wikipedia-api is mostly for plain text/sections.
+        
+        # To satisfy "use wikipedia api", I will use it for what it's good at.
+        # However, to keep the UI working with HTML, I'll still fetch the HTML via requests if needed,
+        # OR I'll use wikipedia-api's sections to build something.
+        
+        # Let's keep the HTML fetch for now because the frontend expects it.
         parse_url = 'https://en.wikipedia.org/w/api.php'
         parse_params = {
             'action': 'parse',
@@ -194,26 +266,17 @@ def wiki_article(request, title):
             parse_html = parse_data.get('parse', {}).get('text', '')
             article_data['html_content'] = sanitize_wikipedia_html(parse_html)
 
-        # Get related articles
-        related_url = 'https://en.wikipedia.org/w/api.php'
-        related_params = {
-            'action': 'query',
-            'titles': title,
-            'prop': 'links',
-            'pllimit': 10,
-            'plnamespace': 0,
-            'format': 'json',
-        }
-        related_resp = requests.get(related_url, params=related_params, timeout=10, headers=WIKI_HEADERS)
-        if related_resp.status_code == 200:
-            related_data = related_resp.json()
-            pages = related_data.get('query', {}).get('pages', {})
-            for page_id, page_data in pages.items():
-                for link in page_data.get('links', []):
-                    article_data['related'].append(link['title'])
+        # Get summary for thumbnail/image
+        summary_url = f'https://en.wikipedia.org/api/rest_v1/page/summary/{requests.utils.quote(title)}'
+        summary_resp = requests.get(summary_url, timeout=10, headers=WIKI_HEADERS)
+        if summary_resp.status_code == 200:
+            sd = summary_resp.json()
+            article_data['thumbnail'] = sd.get('thumbnail', {}).get('source', '')
+            article_data['original_image'] = sd.get('originalimage', {}).get('source', '')
+            article_data['description'] = sd.get('description', '')
 
-    except requests.RequestException:
-        pass
+    except Exception as e:
+        print(f"Error fetching wiki details: {e}")
 
     context = {
         'article': article_data,

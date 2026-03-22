@@ -4,7 +4,7 @@ const getBaseURL = () => {
     if (import.meta.env.VITE_API_URL) {
         return import.meta.env.VITE_API_URL;
     }
-    return 'http://localhost:8000/api/v1/';
+    return 'http://localhost:8001/api/v1/';
 };
 
 const api = axios.create({
@@ -17,12 +17,100 @@ const api = axios.create({
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('access_token');
-        if (token) {
+        const url = config.url || '';
+        const isAuthEndpoint =
+            url.includes('auth/login/') ||
+            url.includes('auth/register/') ||
+            url.includes('auth/refresh/');
+
+        if (token && !isAuthEndpoint) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
         return config;
     },
     (error) => Promise.reject(error)
+);
+
+let isRefreshing = false;
+let refreshSubscribers = [];
+
+const subscribeTokenRefresh = (callback) => {
+    refreshSubscribers.push(callback);
+};
+
+const onRefreshed = (token) => {
+    refreshSubscribers.forEach((callback) => callback(token));
+    refreshSubscribers = [];
+};
+
+const clearAuthTokens = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+};
+
+api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config;
+        const isAuthRefreshCall = originalRequest?.url?.includes('auth/refresh/');
+        const status = error.response?.status;
+
+        if (!originalRequest || originalRequest._retry || isAuthRefreshCall) {
+            return Promise.reject(error);
+        }
+
+        const isTokenInvalid = error.response?.data?.code === 'token_not_valid';
+        if (status !== 401 && !isTokenInvalid) {
+            return Promise.reject(error);
+        }
+
+        const refreshToken = localStorage.getItem('refresh_token');
+        if (!refreshToken) {
+            clearAuthTokens();
+            return Promise.reject(error);
+        }
+
+        if (isRefreshing) {
+            return new Promise((resolve, reject) => {
+                subscribeTokenRefresh((newAccessToken) => {
+                    if (!newAccessToken) {
+                        reject(error);
+                        return;
+                    }
+                    originalRequest.headers = originalRequest.headers || {};
+                    originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+                    resolve(api(originalRequest));
+                });
+            });
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        try {
+            const response = await api.post('auth/refresh/', { refresh: refreshToken });
+            const newAccessToken = response.data?.access;
+
+            if (!newAccessToken) {
+                clearAuthTokens();
+                onRefreshed(null);
+                return Promise.reject(error);
+            }
+
+            localStorage.setItem('access_token', newAccessToken);
+            onRefreshed(newAccessToken);
+
+            originalRequest.headers = originalRequest.headers || {};
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            return api(originalRequest);
+        } catch (refreshError) {
+            clearAuthTokens();
+            onRefreshed(null);
+            return Promise.reject(refreshError);
+        } finally {
+            isRefreshing = false;
+        }
+    }
 );
 
 // Centralized API Service
