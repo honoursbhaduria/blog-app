@@ -10,22 +10,48 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import os
+from urllib.parse import urlparse, parse_qs
 from pathlib import Path
+from datetime import timedelta
+
+try:
+    from dotenv import load_dotenv
+except Exception:
+    load_dotenv = None
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+if load_dotenv:
+    load_dotenv(BASE_DIR.parent / '.env')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
+def env_bool(name, default=False):
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {'1', 'true', 'yes', 'on'}
+
+
+def env_list(name, default=''):
+    value = os.getenv(name, default)
+    return [item.strip() for item in value.split(',') if item.strip()]
+
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-n8^@1$ll9wyo)$h5h+5xq-a7a!vnn&@5(gi#!3*9#t@=nqc&al'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env_bool('DJANGO_DEBUG', True)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost')
+
+if not DEBUG and SECRET_KEY == 'django-insecure-change-me':
+    raise ValueError('DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is False.')
 
 
 # Application definition
@@ -84,22 +110,52 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'neondb',
-        'USER': 'neondb_owner',
-        'PASSWORD': 'npg_FmYgvARHO2e8',
-        'HOST': 'ep-misty-sound-ady9xavy.c-2.us-east-1.aws.neon.tech',
-        'PORT': '5432',
-        'CONN_MAX_AGE': 600,
-        'CONN_HEALTH_CHECKS': True,
-        'OPTIONS': {
-            'sslmode': 'require',
-            'connect_timeout': 5,
-        },
+USE_SQLITE = env_bool('USE_SQLITE', True)
+NEON_DATABASE_URL = os.getenv('NEON_DATABASE_URL', '').strip()
+
+if NEON_DATABASE_URL:
+    parsed = urlparse(NEON_DATABASE_URL)
+    parsed_query = parse_qs(parsed.query)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': (parsed.path or '').lstrip('/'),
+            'USER': parsed.username or '',
+            'PASSWORD': parsed.password or '',
+            'HOST': parsed.hostname or '',
+            'PORT': str(parsed.port or '5432'),
+            'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '600')),
+            'CONN_HEALTH_CHECKS': True,
+            'OPTIONS': {
+                'sslmode': parsed_query.get('sslmode', [os.getenv('DB_SSLMODE', 'require')])[0],
+                'connect_timeout': int(os.getenv('DB_CONNECT_TIMEOUT', '5')),
+            },
+        }
     }
-}
+elif USE_SQLITE:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', ''),
+            'USER': os.getenv('DB_USER', ''),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', ''),
+            'PORT': os.getenv('DB_PORT', '5432'),
+            'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '600')),
+            'CONN_HEALTH_CHECKS': True,
+            'OPTIONS': {
+                'sslmode': os.getenv('DB_SSLMODE', 'require'),
+                'connect_timeout': int(os.getenv('DB_CONNECT_TIMEOUT', '5')),
+            },
+        }
+    }
 
 
 # Password validation
@@ -153,10 +209,20 @@ MEDIA_ROOT = BASE_DIR /'media'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # Groq AI API Key
-GROQ_API_KEY = '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'
+GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
 
 # CORS Settings
-CORS_ALLOW_ALL_ORIGINS = True # For development
+CORS_ALLOW_ALL_ORIGINS = env_bool('CORS_ALLOW_ALL_ORIGINS', DEBUG)
+CORS_ALLOWED_ORIGINS = env_list('CORS_ALLOWED_ORIGINS', '')
+CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS', '')
+
+SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', not DEBUG)
+SESSION_COOKIE_SECURE = env_bool('SESSION_COOKIE_SECURE', not DEBUG)
+CSRF_COOKIE_SECURE = env_bool('CSRF_COOKIE_SECURE', not DEBUG)
+SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '0' if DEBUG else '31536000'))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', not DEBUG)
+SECURE_HSTS_PRELOAD = env_bool('SECURE_HSTS_PRELOAD', not DEBUG)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Django REST Framework Settings
 REST_FRAMEWORK = {
@@ -168,7 +234,6 @@ REST_FRAMEWORK = {
     ),
 }
 
-from datetime import timedelta
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
@@ -191,7 +256,7 @@ CACHES = {
 }
 
 # Development-only optimization to reduce auth hashing overhead in local perf runs
-if DEBUG:
+if DEBUG and env_bool('FAST_DEV_HASHER', False):
     PASSWORD_HASHERS = [
         'django.contrib.auth.hashers.MD5PasswordHasher',
         'django.contrib.auth.hashers.PBKDF2PasswordHasher',
