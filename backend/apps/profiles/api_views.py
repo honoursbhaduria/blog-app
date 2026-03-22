@@ -77,11 +77,20 @@ class EditProfileView(generics.RetrieveUpdateAPIView):
 
     def perform_update(self, serializer):
         user_data = self.request.data.get('user', {})
-        if user_data:
+        if not isinstance(user_data, dict):
+            user_data = {}
+
+        first_name = user_data.get('first_name', self.request.data.get('first_name'))
+        last_name = user_data.get('last_name', self.request.data.get('last_name'))
+
+        if first_name is not None or last_name is not None:
             user = self.request.user
-            user.first_name = user_data.get('first_name', user.first_name)
-            user.last_name = user_data.get('last_name', user.last_name)
-            user.save()
+            if first_name is not None:
+                user.first_name = first_name
+            if last_name is not None:
+                user.last_name = last_name
+            user.save(update_fields=['first_name', 'last_name'])
+
         serializer.save()
         bump_cache_version('api:profiles:edit:version')
 

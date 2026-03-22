@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { profileService, dashboardService } from '../services/api';
+import { profileService } from '../services/api';
 import { User, AtSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getFullImageUrl } from '../utils/helpers';
@@ -98,6 +98,8 @@ export default function EditProfile() {
         if (bannerFile) formData.append('profile_banner', bannerFile);
         
         formData.append('about', profile.about);
+        formData.append('first_name', profile.user.first_name || '');
+        formData.append('last_name', profile.user.last_name || '');
         formData.append('phone', profile.phone);
         formData.append('github_handle', profile.github_handle);
         formData.append('linkedin_handle', profile.linkedin_handle);
@@ -121,12 +123,6 @@ export default function EditProfile() {
 
         try {
             await profileService.updateProfile(formData, config);
-            if (profile.user.id) {
-                await dashboardService.updateUser(profile.user.id, {
-                    first_name: profile.user.first_name,
-                    last_name: profile.user.last_name
-                });
-            }
             alert("Identity updated successfully!");
         } catch (error) {
             console.error("Failed to save profile", error);
