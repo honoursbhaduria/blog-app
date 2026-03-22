@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: blogging-system-api
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r ../requirements.txt
+    startCommand: gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: USE_SQLITE
+        value: "False"
+
+  - type: cron
+    name: blogging-system-keepalive
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r ../requirements.txt
+    schedule: "*/3 * * * *"
+    startCommand: >-
+      python -c 'import os, urllib.request; base=os.environ.get("PING_URL", "https://blogging-system-api.onrender.com").rstrip("/"); urllib.request.urlopen(base + "/api/v1/health/", timeout=20)'
+    envVars:
+      - key: PING_URL
+        value: https://blogging-system-api.onrender.com

@@ -78,6 +78,72 @@ Base path: `/api/v1/`
 - Frontend build:
   - `cd frontend && npm run build`
 
+## Deployment
+
+### Backend deployment checklist
+
+1. Set production env vars:
+	- `DJANGO_DEBUG=False`
+	- `DJANGO_SECRET_KEY=<strong-secret>`
+	- `DJANGO_ALLOWED_HOSTS=<your-domain>,<your-service-host>`
+	- `NEON_DATABASE_URL=<your-neon-postgres-url>`
+	- `GROQ_API_KEY=<your-groq-key>`
+	- `CORS_ALLOW_ALL_ORIGINS=False`
+	- `CORS_ALLOWED_ORIGINS=<frontend-domain>`
+	- `CSRF_TRUSTED_ORIGINS=<frontend-domain>`
+2. Install backend deps:
+	- `pip install -r requirements.txt`
+3. Apply migrations:
+	- `python backend/manage.py migrate`
+4. Collect static files:
+	- `python backend/manage.py collectstatic --noinput`
+5. Start server:
+	- `gunicorn core.wsgi:application --chdir backend --bind 0.0.0.0:$PORT --workers 3 --timeout 120`
+
+### Frontend deployment checklist
+
+1. Set frontend env var:
+	- `VITE_API_URL=<your-backend-api-base>/api/v1/`
+2. Install and build:
+	- `cd frontend && npm install --legacy-peer-deps && npm run build`
+3. Deploy `frontend/dist/` to your static hosting provider.
+
+### Pre-release verification
+
+- `python backend/manage.py check`
+- `python backend/manage.py migrate --plan`
+- `cd frontend && npm run build`
+- Verify login, post list, post detail, profile, wiki search, and AI endpoints from deployed frontend.
+
+### Render keep-alive cron (every 3 minutes)
+
+- A Render blueprint is included at `render.yaml`.
+- It defines:
+	- a web service (`blogging-system-api`)
+	- a cron service (`blogging-system-keepalive`) with schedule `*/3 * * * *`
+- The cron service calls:
+	- `<PING_URL>/api/v1/health/`
+- Set `PING_URL` to your actual Render web URL if it differs.
+
+## Docker quick deploy
+
+1. Ensure `.env` is filled (especially `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `NEON_DATABASE_URL`, `GROQ_API_KEY`).
+2. Build and run container:
+	- `docker compose up --build -d`
+3. Frontend will be available at:
+	- `http://localhost`
+4. API will be available both via:
+	- `http://localhost/api/v1/` (proxied through frontend container)
+	- `http://localhost:8001/api/v1/` (direct backend port)
+5. View logs:
+	- `docker compose logs -f web frontend`
+6. Stop container:
+	- `docker compose down`
+
+Notes:
+- Container startup runs migrations and collectstatic automatically.
+- Media files are persisted in the `media_data` Docker volume.
+
 ## Contribution rules
 
 To keep the repo stable, follow these rules when contributing:

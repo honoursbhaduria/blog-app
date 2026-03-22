@@ -10,6 +10,8 @@ psycopg2-binary
 requests
 wikipedia-api
 python-dotenv
+gunicorn
+whitenoise
 
 
 
