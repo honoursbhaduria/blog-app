@@ -10,6 +10,28 @@ services:
         value: "False"
       - key: USE_SQLITE
         value: "False"
+      - key: RENDER_EXTERNAL_HOSTNAME
+        value: canvas4blog.onrender.com
+      - key: DJANGO_ALLOWED_HOSTS
+        value: canvas4blog.onrender.com,.onrender.com,127.0.0.1,localhost
+      - key: CORS_ALLOW_ALL_ORIGINS
+        value: "False"
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://canvas4blog.onrender.com
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://canvas4blog.onrender.com
+      - key: SECURE_SSL_REDIRECT
+        value: "True"
+      - key: SESSION_COOKIE_SECURE
+        value: "True"
+      - key: CSRF_COOKIE_SECURE
+        value: "True"
+      - key: SECURE_HSTS_SECONDS
+        value: "31536000"
+      - key: SECURE_HSTS_INCLUDE_SUBDOMAINS
+        value: "True"
+      - key: SECURE_HSTS_PRELOAD
+        value: "True"
 
   - type: cron
     name: blogging-system-keepalive
@@ -29,4 +51,4 @@ for _ in range(3):
 raise SystemExit(0 if ok else 1)'
     envVars:
       - key: PING_URL
-        value: https://blogging-system-api.onrender.com
+        value: https://canvas4blog.onrender.com
