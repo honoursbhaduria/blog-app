@@ -49,11 +49,23 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-change-me')
 DEBUG = env_bool('DJANGO_DEBUG', True)
 
 RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME', '').strip()
+RENDER_EXTERNAL_URL = os.getenv('RENDER_EXTERNAL_URL', '').strip()
 allowed_hosts_default = '127.0.0.1,localhost'
 if RENDER_EXTERNAL_HOSTNAME:
     allowed_hosts_default = f"{allowed_hosts_default},{RENDER_EXTERNAL_HOSTNAME}"
 
+if RENDER_EXTERNAL_URL:
+    parsed_render_url = urlparse(RENDER_EXTERNAL_URL)
+    if parsed_render_url.hostname:
+        allowed_hosts_default = f"{allowed_hosts_default},{parsed_render_url.hostname}"
+
 ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', allowed_hosts_default)
+
+if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+if '.onrender.com' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('.onrender.com')
 
 if not DEBUG and SECRET_KEY == 'django-insecure-change-me':
     raise ValueError('DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is False.')
