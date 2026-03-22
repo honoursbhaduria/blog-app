@@ -24,7 +24,8 @@ except Exception:
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 if load_dotenv:
-    load_dotenv(BASE_DIR.parent / '.env')
+    if os.getenv('RENDER', '').strip().lower() != 'true':
+        load_dotenv(BASE_DIR.parent / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -46,7 +47,7 @@ def env_list(name, default=''):
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env_bool('DJANGO_DEBUG', True)
+DEBUG = env_bool('DJANGO_DEBUG', False)
 
 RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME', '').strip()
 RENDER_EXTERNAL_URL = os.getenv('RENDER_EXTERNAL_URL', '').strip()
